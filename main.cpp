@@ -2,16 +2,7 @@
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/date_time.hpp>
 using namespace boost;
-
-template <class T>
-valarray<T> vecValToVal(vector<valarray<T>> vvT) {
-	valarray<T> toret(vvT.size()*vvT[0].size());
-	for(int i=0; i<vvT.size(); ++i)
-		toret[slice(i*vvT[0].size(),vvT[0].size(),1)]=vvT[i];
-	return toret;
-}
 
 template <class T>
 valarray<T> splitConvert(string line, const char *seperator) {
@@ -63,14 +54,17 @@ vector<valarray<int>> parseEvents(int argc, char *argv[], int maxEvents) {
 		}
 		while(file.good()) {
 			getline(file,line);
+			valarray<int> splitLine;
 			try {
-				events.push_back(splitConvert<int>(line,"\t :-"));
+				splitLine=splitConvert<int>(line,"\t :-");
 			}
 			catch (...) {
 				cout << "Failed to parse a line of " << __argv[i] << ". Continuing." << endl;
 				continue;
 			}
-			if(counter++>=maxEvents) {
+			if(splitLine[EV_ANTENNA]!=-1)
+				events.push_back(splitLine);
+			if(++counter>=maxEvents) {
 				breaking=true;
 				break;
 			}
@@ -82,6 +76,14 @@ vector<valarray<int>> parseEvents(int argc, char *argv[], int maxEvents) {
 	return events;
 }
 
+//make this a class??
+void printAnt(valarray<float> ant) {
+	for(int i=0; i<2; ++i)
+		cout << ant[i] << "\t";
+	cout << endl;
+}
+		
+
 int main(int __argc, char* __argv[]) {
 	//first argument is antenna table, all other arguments list event tables
 	//print first 100 events and their locations
@@ -91,20 +93,29 @@ int main(int __argc, char* __argv[]) {
 	}
 	int nEvents=1000;
 	
-	valarray<float> antennas=vecValToVal<float>(parseAntennas(__argv[1]));
-	valarray<int> events=vecValToVal<int>(parseEvents(__argc, __argv, nEvents));
-	events[slice(EV_ANTENNA,nEvents,EV_SIZE)]-=valarray<int>(1,nEvents);
-	events[slice(EV_UID,nEvents,EV_SIZE)]-=valarray<int>(1,nEvents);
+	multiDimVala<float> antennas(parseAntennas(__argv[1]));
+	multiDimVala<int> events(parseEvents(__argc, __argv, nEvents));
+	//The data wasn't formatted by a programmer because it starts counting from 1.
+	events.getView(1,EV_ANTENNA)-=valarray<int>(1,nEvents);
+	events.getView(1,EV_UID)-=valarray<int>(1,nEvents);
 	User::antennas=antennas;
 	vector<User> users;
 	for(int i=0; i<nEvents; ++i) {
-		int uid=events[i*EV_SIZE+EV_UID];
+		valarray<int> cur=events.getCopy(0,i);
+		int uid=cur[EV_UID];
+		//for testing
+		if(uid==0)
+			printAnt(antennas.getCopy(0,cur[EV_ANTENNA]));
+		//end for testing
 		if(uid >= users.size())
 			users.push_back(User());
-		users[uid].addEvent(events[slice(i,EV_SIZE,1)]);
+		users[uid].addEvent(cur);
 	}
-	for(int i=0; i<users.size(); ++i)
-		cout << users[i].getSmoothed().size() << endl;
+	
+	cout << endl << endl << endl;
+	multiDimVala<float> u1=users[0].getSmoothed();
+	for(int i=0; i<(int) u1.shape[0]; ++i)
+		printAnt(u1.getCopy(0,i));
 
 	string line;
 	cin >> line;

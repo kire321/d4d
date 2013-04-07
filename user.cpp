@@ -1,30 +1,29 @@
 #include <user.h>
 
-//our data is from a leap year
-int monthLengths[12]={31,29,31,30,31,30,31,31,30,31,30,31};
-valarray<float>& User::antennas=valarray<float>();
-
-template <class T>
-valarray<T> vecValToVal(vector<valarray<T>> vvT) {
-	valarray<T> toret(vvT.size()*vvT[0].size());
-	for(int i=0; i<vvT.size(); ++i)
-		toret[slice(i*vvT[0].size(),vvT[0].size(),1)]=vvT[i];
-	return toret;
-}
+multiDimVala<float>& User::antennas=multiDimVala<float>();
 
 void User::addEvent(valarray<int> newEvent) {
 	//number of seconds is always zero
-	times.push_back(((newEvent[EV_YEAR]-2010)*365+monthLengths[newEvent[EV_MONTH]]+newEvent[EV_DAY])*24*60+newEvent[EV_HOUR]*60+newEvent[EV_MINUTE]);
-	original.push_back(antennas[slice(newEvent[EV_ANTENNA],2,1)]);
+	times.push_back(newEvent[EV_HOUR]*60+newEvent[EV_MINUTE]);
+	original.push_back(antennas.getCopy(0,newEvent[EV_ANTENNA]));
+	smoothedUpToDate=false;
 }
 
 void User::smooth() {
 	smoothedUpToDate=true;
-	//TODO: actual implementation
-	smoothed=vecValToVal<float>(original);
+	multiDimVala<float> vala(original);
+	smoothed=multiDimVala<float>(original.size(),2);
+	for(int i=0; i<original.size(); ++i) {
+		multiDimVala<float> gauss(times.size(),2);
+		for(int j=0; j<times.size(); ++j)
+			gauss.getView(0,j)=pdf(normal(times[i],60),times[j]);
+		valarray<float> denom=gauss.sum(0);
+		gauss.data*=vala.data;
+		smoothed.getView(0,i)=gauss.sum(0)/denom;
+	}	
 }
 
-valarray<float> User::getSmoothed() {
+multiDimVala<float> User::getSmoothed() {
 	if(!smoothedUpToDate)
 		smooth();
 	return smoothed;
