@@ -1,5 +1,4 @@
 #include <multiDimVala.h>
-#include <iostream>
 #include <string>
 #include <boost\math\distributions\normal.hpp>
 #pragma once

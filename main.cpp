@@ -2,6 +2,7 @@
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <antenna.h>
 using namespace boost;
 
 template <class T>
@@ -74,15 +75,7 @@ vector<valarray<int>> parseEvents(int argc, char *argv[], int maxEvents) {
 			break;
 	}
 	return events;
-}
-
-//make this a class??
-void printAnt(valarray<float> ant) {
-	for(int i=0; i<2; ++i)
-		cout << ant[i] << "\t";
-	cout << endl;
-}
-		
+}		
 
 int main(int __argc, char* __argv[]) {
 	//first argument is antenna table, all other arguments list event tables
@@ -91,7 +84,7 @@ int main(int __argc, char* __argv[]) {
 		cout << "We need at least two arguments: the antennas and at least one file with events." << endl;
 		return 0;
 	}
-	int nEvents=1000;
+	int nEvents=100;
 	
 	multiDimVala<float> antennas(parseAntennas(__argv[1]));
 	multiDimVala<int> events(parseEvents(__argc, __argv, nEvents));
@@ -99,13 +92,14 @@ int main(int __argc, char* __argv[]) {
 	events.getView(1,EV_ANTENNA)-=valarray<int>(1,nEvents);
 	events.getView(1,EV_UID)-=valarray<int>(1,nEvents);
 	User::antennas=antennas;
+	Antenna::antennas=antennas;
 	vector<User> users;
 	for(int i=0; i<nEvents; ++i) {
 		valarray<int> cur=events.getCopy(0,i);
 		int uid=cur[EV_UID];
 		//for testing
 		if(uid==0)
-			printAnt(antennas.getCopy(0,cur[EV_ANTENNA]));
+			Antenna(cur[EV_ANTENNA]).print();
 		//end for testing
 		if(uid >= users.size())
 			users.push_back(User());
@@ -115,7 +109,7 @@ int main(int __argc, char* __argv[]) {
 	cout << endl << endl << endl;
 	multiDimVala<float> u1=users[0].getSmoothed();
 	for(int i=0; i<(int) u1.shape[0]; ++i)
-		printAnt(u1.getCopy(0,i));
+		Antenna(u1.getView(0,i)).nearest().print();
 
 	string line;
 	cin >> line;

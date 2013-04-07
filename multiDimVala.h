@@ -1,18 +1,21 @@
 #include <valarray>
 #include <vector>
 #include <assert.h>
+#include <iostream>
+#include <limits>
 #pragma once
 using namespace std;
 
+//Sadly, I'm not joking. STL doesn't have a built-in way to find the min or max index in a valarray.
+template <class T> int argmin(valarray<T> vala);
+template <class T> int argmax(valarray<T> vala) {return argmin(vala*-1);}
+
 template <class T>
 class multiDimVala {
-	//The rows/columns returned by this class are not views, the data is deepcopied.
-	//TODO: make that comment untrue!
 	//Sorry, you can only make two-dimensional valas
 public:
 	valarray<T> data;
 	vector<int> shape;
-	//The vector spans dimension 0
 	multiDimVala() {}
 	multiDimVala(int d0, int d1): data(valarray<T>(d0*d1)) {
 		shape.push_back(d0);
@@ -23,6 +26,14 @@ public:
 	valarray<T> getCopy(int dimension, int index) {return valarray<T>(getView(dimension,index));} // returns a deepcopy of the original row/column. Subscriptable, but modifications to the deepcopy do not effect the original. Slower, since the data is actually copied
 	T& getSingle(int i0, int i1); //returns a single item from the array. Changes to this item are reflected in the original.
 	valarray<T> sum(int dim); //STL is annoying and won't let us sum over views
+	multiDimVala<T>& operator+=(const valarray<T>& rhs); //Arithmatic requires you match the innermost dimension
+	multiDimVala<T>& operator+(const valarray<T>& rhs) {return multiDimVala<T>(*this)+=rhs;}
+	multiDimVala<T>& operator-=(const valarray<T>& rhs) {return *this+=-rhs;}
+	multiDimVala<T>& operator-(const valarray<T>& rhs) {return *this+-rhs;}
+	multiDimVala<T>& operator*=(const valarray<T>& rhs);
+	multiDimVala<T>& operator*(const valarray<T>& rhs) {return multiDimVala<T>(*this)*=rhs;}
+	multiDimVala<T>& operator/=(const valarray<T>& rhs);
+	multiDimVala<T>& operator/(const valarray<T>& rhs) {return multiDimVala<T>(*this)/=rhs;}
 };
 
 #include <multiDimVala.cpp>

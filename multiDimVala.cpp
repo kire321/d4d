@@ -2,6 +2,16 @@
 #include <multiDimVala.h>
 
 template <class T>
+int argmin(valarray<T> vala) {
+	assert(vala.size()>=1);
+	int minIndex=numeric_limits<int>::max();
+	for(int i=0; i<vala.size(); ++i)
+		if(vala[i]<vala[minIndex])
+			minIndex=i;
+	return minIndex;
+}
+
+template <class T>
 multiDimVala<T>::multiDimVala(vector<valarray<T>> vvT) {
 	shape=vector<int>(2);
 	shape[0]=vvT.size();
@@ -49,4 +59,28 @@ valarray<T> multiDimVala<T>::sum(int dim) {
 		toret[i]=total;
 	}
 	return toret;
+}
+
+template <class T>
+multiDimVala<T>& multiDimVala<T>::operator+=(const valarray<T>& rhs) {
+	assert(rhs.size()==shape[1]);
+	for(int i=0; i<shape[0]; ++i)
+		getView(0,i)+=rhs;
+	return *this;
+}
+
+template <class T>
+multiDimVala<T>& multiDimVala<T>::operator*=(const valarray<T>& rhs) {
+	assert(rhs.size()==shape[1]);
+	for(int i=0; i<shape[0]; ++i)
+		getView(0,i)*=rhs;
+	return *this;
+}
+
+template <class T>
+multiDimVala<T>& multiDimVala<T>::operator/=(const valarray<T>& rhs) {
+	assert(rhs.size()==shape[1]);
+	for(int i=0; i<shape[0]; ++i)
+		getView(0,i)/=rhs;
+	return *this;
 }
