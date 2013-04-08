@@ -76,42 +76,51 @@ vector<valarray<int>> parseEvents(int argc, char *argv[], int maxEvents) {
 	}
 	return events;
 }		
-
+	
 int main(int __argc, char* __argv[]) {
 	//first argument is antenna table, all other arguments list event tables
 	//print first 100 events and their locations
-	if(__argc < 3) {
-		cout << "We need at least two arguments: the antennas and at least one file with events." << endl;
-		return 0;
-	}
-	int nEvents=100;
-	
-	multiDimVala<float> antennas(parseAntennas(__argv[1]));
-	multiDimVala<int> events(parseEvents(__argc, __argv, nEvents));
-	//The data wasn't formatted by a programmer because it starts counting from 1.
-	events.getView(1,EV_ANTENNA)-=valarray<int>(1,nEvents);
-	events.getView(1,EV_UID)-=valarray<int>(1,nEvents);
-	User::antennas=antennas;
-	Antenna::antennas=antennas;
-	vector<User> users;
-	for(int i=0; i<nEvents; ++i) {
-		valarray<int> cur=events.getCopy(0,i);
-		int uid=cur[EV_UID];
-		//for testing
-		if(uid==0)
-			Antenna(cur[EV_ANTENNA]).print();
-		//end for testing
-		if(uid >= users.size())
-			users.push_back(User());
-		users[uid].addEvent(cur);
-	}
-	
-	cout << endl << endl << endl;
-	multiDimVala<float> u1=users[0].getSmoothed();
-	for(int i=0; i<(int) u1.shape[0]; ++i)
-		Antenna(u1.getView(0,i)).nearest().print();
-
+	assert(__argc>=3);
 	string line;
-	cin >> line;
-	return 0;
+	int nEvents;
+	while(true) {
+		cout << "Type a number of events to process or 'quit'." << endl;
+		cin >> line;
+		if(line==string("quit"))
+			return 0;
+		try {
+			nEvents=lexical_cast<int>(line);
+		}
+		catch (...) {
+			cout << "Command unrecognized." << endl;
+			continue;
+		}
+
+		multiDimVala<float> antennas(parseAntennas(__argv[1]));
+		multiDimVala<int> events(parseEvents(__argc, __argv, nEvents));
+		//The data wasn't formatted by a programmer because it starts counting from 1.
+		events.getView(1,EV_ANTENNA)-=valarray<int>(1,nEvents);
+		events.getView(1,EV_UID)-=valarray<int>(1,nEvents);
+		User::antennas=antennas;
+		vector<User> users;
+		for(int i=0; i<nEvents; ++i) {
+			valarray<int> cur=events.getCopy(0,i);
+			int uid=cur[EV_UID];
+			if(uid >= users.size())
+				users.push_back(User());
+			users[uid].addEvent(cur);
+		}
+	
+		int nChanged=0;
+		for(int i=0; i<users.size(); ++i) {
+			multiDimVala<float> smoothed=users[i].getSmoothed();
+			multiDimVala<float> original=users[i].getOriginal();
+			for(int j=0; j<smoothed.shape[0]; ++j)
+				if(Antenna(&smoothed,j).nearest(antennas)!=Antenna(&original,j))
+					++nChanged;
+		}
+
+		cout << nChanged << " out of " << nEvents << " were changed." << endl;
+		cout << float(nChanged)/float(nEvents) << " were changed." << endl;
+	}
 }

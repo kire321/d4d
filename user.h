@@ -24,6 +24,7 @@ public:
 	User(): smoothedUpToDate(false) {}
 	static multiDimVala<float>& antennas;
 	void addEvent(valarray<int> newEvent);
+	multiDimVala<float> getOriginal() {return multiDimVala<float>(original);}
 	multiDimVala<float> getSmoothed();
 	/*Event makePrediction();*/
 };

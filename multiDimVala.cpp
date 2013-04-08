@@ -4,7 +4,7 @@
 template <class T>
 int argmin(valarray<T> vala) {
 	assert(vala.size()>=1);
-	int minIndex=numeric_limits<int>::max();
+	int minIndex=0;
 	for(int i=0; i<vala.size(); ++i)
 		if(vala[i]<vala[minIndex])
 			minIndex=i;
@@ -38,7 +38,7 @@ slice_array<T> multiDimVala<T>::getView(int dimension, int index) {
 }
 
 template <class T>
-T& multiDimVala<T>::getSingle(int d0, int d1) {
+T multiDimVala<T>::getSingle(int d0, int d1) {
 	assert(0<=d0 && d0<shape[0]);
 	assert(0<=d1 && d1<shape[1]);
 	return data[shape[1]*d0+d1];
