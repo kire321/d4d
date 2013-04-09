@@ -1,3 +1,5 @@
+#include <random>
+
 #include "antenna_model.h"
 
 AntennaModel::AntennaModel()
@@ -14,7 +16,9 @@ bool AntennaModel::add_antenna(unsigned id, double lat, double lon)
 {
     if (!antennas->find_by_id(id)) {
         antennas.add_row(id, lat, lon);
+        return true;
     }
+    return false;
 }
 
 void AntennaModel::update(Event* event)
@@ -23,7 +27,7 @@ void AntennaModel::update(Event* event)
     unsigned antenna_id = event->antenna_id;
     unsigned time = event->time;
 
-    User* user = UserModel->find_by_id(uid);
+    User* user = UserModel->find_user_by_id(uid);
     Event* last_event = user->get_last_event();
     unsigned origin_antenna_id = last_event->antenna_id;
     unsigned elapsed_time = time - last_event->time;
@@ -37,6 +41,11 @@ void AntennaModel::update(Event* event)
     while (next_antenna = path.get_next_step() != path.last_step()) {
         transition_frequencies[current_antenna][path.last_step()][elapsed_time--][path.get_first_step()]++;
     }
+}
+
+Antenna* find_by_id(unsigned_id)
+{
+    antennas->find_by_id;
 }
 
 Path AntennaModel::path_prediction(unsigned start, unsigned end, unsigned time);
@@ -54,6 +63,12 @@ Path AntennaModel::path_prediction(unsigned start, unsigned end, unsigned time);
 
 unsigned AntennaModel::next_step_prediction(unsigned start, unsigned end, unsigned time)
 {
-    // TODO: sample from vector of transition_frequencies[start][end][elapsed_time];
-    return 0;
+    std::default_random_engine generator;
+
+    std::vector<unsigned> frequencies =
+        transition_frequencies[start][end][time];
+    std::discrete_distribution<int> distribution(frequencies.begin(),
+        frequencies.end());
+
+    return distribution(generator);
 }

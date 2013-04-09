@@ -16,11 +16,16 @@ class User {
     multiDimVala<float> smoothed;
     bool smoothedUpToDate;
     void smooth();
-public:
-    User(): smoothedUpToDate(false) {}
-    static multiDimVala<float> antennas;
-    void addEvent(valarray<int> newEvent);
-    multiDimVala<float> getOriginal() {return multiDimVala<float>(original);}
-    multiDimVala<float> getSmoothed();
-    /*Event makePrediction();*/
+
+    public:
+        static multiDimVala<float> antennas; // FIXME: what does this do?
+
+        User() : smoothedUpToDate(false) {}
+
+        void addEvent(valarray<int> newEvent);
+
+        multiDimVala<float> getOriginal() {return multiDimVala<float>(original);}
+        multiDimVala<float> getSmoothed();
+        Event* get_last_event();
+        /*Event makePrediction();*/
 };

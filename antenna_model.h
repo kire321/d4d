@@ -14,8 +14,8 @@ class AntennaModel
 
         bool add_antenna(unsigned id, double lat, double lon);
         // TODO: Load/initialize with a file?
-
         void update(Event& event);
+        Antenna* find_antenna_by_id(unsigned id); // TODO: * or actual objc
 
         Path path_prediction(unsigned start, unsigned end, unsigned time);
 
