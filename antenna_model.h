@@ -1,16 +1,24 @@
+#pragma once
+
+#include "antenna.h"
+#include "path.h"
+
 class AntennaModel
 {
-    vector<vector<vector<int> > > transition_frequencies;
+    multiDimVala<float>* antennas;
+    vector<vector<vector< vector<int> > > > transition_frequencies;
 
     public:
         AntennaModel();
-        AntennaModel(FILE* antenna_data);
+        ~AntennaModel();
 
-        bool add_antenna(unsigned id, double lat, double long);
-        bool load(FILE* event_data);
+        bool add_antenna(unsigned id, double lat, double lon);
+        // TODO: Load/initialize with a file?
 
         void update(Event& event);
-        unsigned interpolate_path(unsigned start, unsigned end, unsigned time); // How do we decide partial time? do we output barycentric weighting?
 
-        unsigned next_step_prediction(unsigned start, unsigned end, unsigned time);
+        Path path_prediction(unsigned start, unsigned end, unsigned time);
+
+    private:
+        unsigned next_step_prediction(unsigned start, unsigned end, elapsed_time);
 };
