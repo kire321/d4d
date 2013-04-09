@@ -1,8 +1,10 @@
-#include <user.h>
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-#include <antenna.h>
+
+#include "user.h"
+#include "antenna.h"
+
 using namespace boost;
 
 template <class T>
@@ -11,16 +13,16 @@ valarray<T> splitConvert(string line, const char *seperator) {
     vector<string> splitVec;
     split(splitVec,line,is_any_of(seperator),token_compress_on);
     valarray<T> toret(splitVec.size());
-    for(int i=0; i<splitVec.size(); ++i) {
+    for(unsigned i=0; i<splitVec.size(); ++i) {
         toret[i]=lexical_cast<T>(splitVec[i]);
     }
     return toret;
 }
 
-vector<valarray<float>> parseAntennas(char *fname) {
+vector<valarray<float> > parseAntennas(char *fname) {
     ifstream file;
     string line;
-    vector<valarray<float>> toret;
+    vector<valarray<float> > toret;
     try {
             file.open(fname);
     }
@@ -40,19 +42,19 @@ vector<valarray<float>> parseAntennas(char *fname) {
     return toret;
 }
 
-vector<valarray<int>> parseEvents(int argc, char *argv[], int maxEvents) {
+vector<valarray<int> > parseEvents(int argc, char *argv[], int maxEvents) {
     int counter=0;
     ifstream file;
     string line;
     bool breaking=false;
-    vector<valarray<int>> events;
+    vector<valarray<int> > events;
     
     for(int i=2; i<argc; ++i) {
         try {
             file.open(argv[i]);
         }
         catch (...) {
-            cout << "Could not open file " << __argv[i] << ". Skipping file." << endl;
+            cout << "Could not open file " << argv[i] << ". Skipping file." << endl;
         }
         while(file.good()) {
             getline(file,line);
@@ -61,7 +63,7 @@ vector<valarray<int>> parseEvents(int argc, char *argv[], int maxEvents) {
                 splitLine=splitConvert<int>(line,"\t :-");
             }
             catch (...) {
-                cout << "Failed to parse a line of " << __argv[i] << ". Continuing." << endl;
+                cout << "Failed to parse a line of " << argv[i] << ". Continuing." << endl;
                 continue;
             }
             if(splitLine[EV_ANTENNA]!=-1)
@@ -106,14 +108,14 @@ int main(int __argc, char* __argv[]) {
         vector<User> users;
         for(int i=0; i<nEvents; ++i) {
             valarray<int> cur=events.getCopy(0,i);
-            int uid=cur[EV_UID];
+            unsigned uid=cur[EV_UID];
             if(uid >= users.size())
                 users.push_back(User());
             users[uid].addEvent(cur);
         }
     
         int nChanged=0;
-        for(int i=0; i<users.size(); ++i) {
+        for(unsigned i=0; i<users.size(); ++i) {
             multiDimVala<float> smoothed=users[i].getSmoothed();
             multiDimVala<float> original=users[i].getOriginal();
             for(int j=0; j<smoothed.shape[0]; ++j)

@@ -1,4 +1,4 @@
-#include <antenna.h>
+#include "antenna.h"
 
 Antenna Antenna::nearest(multiDimVala<float> &otherAntennas) {
     multiDimVala<float> deltas=otherAntennas-antennas->getCopy(0,index);

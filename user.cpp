@@ -1,6 +1,6 @@
-#include <user.h>
+#include "user.h"
 
-multiDimVala<float>& User::antennas=multiDimVala<float>();
+multiDimVala<float> User::antennas = multiDimVala<float>();
 
 void User::addEvent(valarray<int> newEvent) {
     //number of seconds is always zero
@@ -13,9 +13,9 @@ void User::smooth() {
     smoothedUpToDate=true;
     multiDimVala<float> vala(original);
     smoothed=multiDimVala<float>(original.size(),2);
-    for(int i=0; i<original.size(); ++i) {
+    for (unsigned i=0; i<original.size(); ++i) {
         multiDimVala<float> gauss(times.size(),2);
-        for(int j=0; j<times.size(); ++j)
+        for (unsigned j=0; j<times.size(); ++j)
             gauss.getView(0,j)=pdf(normal(times[i],60),times[j]);
         valarray<float> denom=gauss.sum(0);
         gauss.data*=vala.data;
@@ -24,7 +24,7 @@ void User::smooth() {
 }
 
 multiDimVala<float> User::getSmoothed() {
-    if(!smoothedUpToDate)
+    if (!smoothedUpToDate)
         smooth();
     return smoothed;
 }
