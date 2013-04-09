@@ -1,3 +1,5 @@
+#include "types.h"
+
 #include "multiDimVala.h"
 
 class Antenna
@@ -10,6 +12,7 @@ class Antenna
 
         float lat() const { return antennas->getSingle(index,0); };
         float lon() const { return antennas->getSingle(index,1); };
+        AntennaId get_id();
 
         Antenna nearest(multiDimVala<float> &otherAntennas);
 

@@ -1,5 +1,7 @@
-typedef UserId unsigned;
-typedef AntennaId unsigned;
+#pragma once
+
+typedef unsigned UserId;
+typedef unsigned AntennaId;
 
 typedef struct event {
     UserId user_id;

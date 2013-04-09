@@ -12,10 +12,13 @@ AntennaModel::~AntennaModel()
     delete antennas;
 }
 
-bool AntennaModel::add_antenna(unsigned id, double lat, double lon)
+bool AntennaModel::add_antenna(AntennaId id, double lat, double lon)
 {
     if (!antennas->find_by_id(id)) {
         antennas.add_row(id, lat, lon);
+        while (id >= transition_frequencies.size()) {
+            // TODO: add zero row
+        }
         return true;
     }
     return false;
@@ -23,32 +26,32 @@ bool AntennaModel::add_antenna(unsigned id, double lat, double lon)
 
 void AntennaModel::update(Event* event)
 {
-    unsigned user_id = event->user_id;
-    unsigned antenna_id = event->antenna_id;
+    UserId user_id = event->user_id;
+    AntennaId antenna_id = event->antenna_id;
     unsigned time = event->time;
 
     User* user = UserModel->find_user_by_id(uid);
     Event* last_event = user->get_last_event();
-    unsigned origin_antenna_id = last_event->antenna_id;
+    AntennaId origin_antenna_id = last_event->antenna_id;
     unsigned elapsed_time = time - last_event->time;
 
     Path interpolated_path = Path::interpolate(origin_antenna_id, antenna_id,
         time);
 
     // Increment next-step transition frequency for the i,j path on t time units
-    unsigned current_antenna, next_antenna;
+    AntennaId current_antenna, next_antenna;
     current_antenna = path.get_next_step(true);
     while (next_antenna = path.get_next_step() != path.last_step()) {
         transition_frequencies[current_antenna][path.last_step()][elapsed_time--][path.get_first_step()]++;
     }
 }
 
-Antenna* find_by_id(unsigned_id)
+Antenna* find_by_id(AntennaId id)
 {
-    antennas->find_by_id;
+    return antennas->find_by_id(id);
 }
 
-Path AntennaModel::path_prediction(unsigned start, unsigned end, unsigned time);
+Path AntennaModel::path_prediction(AntennaId start, AntennaId end, unsigned time);
 {
     Path predicted_path;
     predicted_path.add_step(start);
@@ -61,12 +64,13 @@ Path AntennaModel::path_prediction(unsigned start, unsigned end, unsigned time);
     predicted_path.add_step(end);
 }
 
-unsigned AntennaModel::next_step_prediction(unsigned start, unsigned end, unsigned time)
+AntennaId AntennaModel::next_step_prediction(AntennaId start, AntennaId end, unsigned time)
 {
     std::default_random_engine generator;
 
     std::vector<unsigned> frequencies =
         transition_frequencies[start][end][time];
+        // FIXME: will choke if distribution is all 0s
     std::discrete_distribution<int> distribution(frequencies.begin(),
         frequencies.end());
 
