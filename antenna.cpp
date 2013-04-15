@@ -5,3 +5,8 @@ Antenna Antenna::nearest(multiDimVala<float> &otherAntennas) {
     deltas.data*=deltas.data;
     return Antenna(&otherAntennas,argmin(deltas.sum(1)));
 };
+
+float Antenna::distance_from(float lat, float lon)
+{
+    return sqrt(fabs(lat() - lat) + fabs(lon() - lon));
+}
