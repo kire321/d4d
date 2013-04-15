@@ -56,6 +56,7 @@ public:
 	template <class T> Table operator/(const Table& rhs) {return this->deepCopy<T>()<T>/=rhs;}*/ //wait till addition works to copy and paste
     template <class T> Table& sumCols(); //sum all columns. Due to implementation details, all columns must be the same type, and you have to tell us what it is.
     template <class T> Table& sumRows(); //sum all rows. Due to implementation details, all columns must be the same type, and you have to tell us what it is.
+    // FIXME: summing over rows/columns meeting a certain condition would be nice
 };
 
 #include <Table.cpp>

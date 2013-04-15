@@ -2,9 +2,27 @@
 
 #include "antenna_model.h"
 
+AntennaModel::AntennaModel(ifstream& file)
+{
+    antennas = new Table(); // FIXME:
+
+    string line;
+
+    while (file.good()) {
+        getline(file, line);
+        try {
+            valarray<float> antenna_data = splitConvert<float>(line, "\t")[slice(1,2,1)];
+            add_antenna(antenna_data);
+        }
+        catch (...) {
+            cout << "Failed to parse a line in antenna file. Continuing." << endl;
+        }
+    }
+}
+
 AntennaModel::AntennaModel()
 {
-    antennas = new multiDimVala<float>();
+    antennas = new Table();
 }
 
 AntennaModel::~AntennaModel()
@@ -17,7 +35,12 @@ bool AntennaModel::add_antenna(AntennaId id, double lat, double lon)
     if (!antennas->find_by_id(id)) {
         antennas.add_row(id, lat, lon);
         while (id >= transition_frequencies.size()) {
+            antennas.add_row();
+            antennas[antennas.size() - 1] = event;
+            // FIXME: assignment here
             // TODO: add zero row
+  // FIXME: dealing with antenna model id != index
+  // "get_by_id"
         }
         return true;
     }

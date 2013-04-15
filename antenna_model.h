@@ -5,16 +5,16 @@
 
 class AntennaModel
 {
-    multiDimVala<float>* antennas;
+    multiDimVala<float>* antennas; // TABLE
     // TODO: want a better way of storing this
     vector<vector<vector< vector<int> > > > transition_frequencies;
 
     public:
         AntennaModel();
+        AntennaModel(ifstream& file);
         ~AntennaModel();
 
         bool add_antenna(AntennaId id, double lat, double lon);
-        // TODO: Load/initialize with a file?
         void update(Event& event);
         Antenna* find_antenna_by_id(AntennaId id); // TODO: * or actual objc
         Antenna* find_nearest_antenna(float lat, float lon);

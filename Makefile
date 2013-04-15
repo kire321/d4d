@@ -2,7 +2,7 @@ CC=g++
 CFLAGS=-g -Wall -O3
 
 default: analysis
- #	predictor
+	#	predictor
 
 analysis: main.o \
 	user.o \
@@ -16,13 +16,15 @@ main.o: user.h \
 # 	$(CC) -c $< -o $@ $(CFLAGS)
 
 antenna.o: antenna.h
-# multiDimVala.o: multiDimVala.h
 user.o: user.h
 antenna_model.o: antenna_model.h
 user_model.o: user_model.h
+table.o: table.h
 
 predictor: predictor.o
 		$(CC) -o $@ $^ $(LIBS) $(CFLAGS)
+
+predictor.o: antenna_model.h user_model.h
 
 clean:
 	rm -f predictor analysis *.o

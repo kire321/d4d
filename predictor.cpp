@@ -1,49 +1,71 @@
 #include <cstdlib>
 #include <cstdio>
 
+#include <iostream>
+#include <string>
+
+#include "antenna_model.h"
+#include "user_model.h"
+
+using namespace std;
+
 int main(int argc, char** argv)
 {
-    // FILE* data_file;
-    // if (argc == 1) {
-    //     char* data_filename = argv[1];
-    //     if (data_file = fopen(data_filename, "r+")) {
-    //     } else {
-    //        perror("Could not open file");
-    //     }
-    // } else if (argc > 1) {
-    //     fprintf(stderr, "Usage: predictor [data_file]");
-    // }
+    // Initialize Antenna Model
+    char* antenna_filename = argv[1];
+    ifstream antenna_file;
+    string line;
+    try {
+        antenna_file.open(antenna_filename);
+    } catch (...) {
+        cout << "Could not open file " << antenna_filename <<
+          ". Skipping file." << endl;
+    }
+    AntennaModel antenna_model(antenna_file);
+    antenna_file.close();
 
-    Table* event_table = new Table("Events"); // Table that stores all events
-    event_table->initialize(event_data_file);
-    Table* antenna_table = new Table("Antenna"); // Stores antenna, lat/lon
-    antenna_table->initialize(antenna_data_file);
+    // Initialize new User Model
+    UserModel user_model();
 
-    valarray<user*> users = event_table->get_all_users();
+    // Open file with events
+    char* event_filename = argv[2];
+    ifstream event_file;
+    try {
+        event_file.open(event_filename);
+    } catch (...) {
+        cout << "Could not open file " << event_filename <<
+          ". Skipping file.\n";
+    }
+    // Read in events and make predictions
+    parse_events(event_file, antenna_model, user_model);
+    event_file.close();
 
-    // Fork off/initialize other processes
-    enter_event_loop();
+    ofstream statistics_file;
+    try {
+        statistics_file.open("stats.txt", "w");
+    } catch (...) {
+        cout << "Could not open stats file for writing.\n";
+    }
+    antenna_model.print_statistics(statistics_file);
+    user_model.print_statistics(statistics_file);
 
     return EXIT_SUCCESS;
 }
 
-void enter_event_loop()
+void parse_events(ifstream& file, AntennaModel& antenna_model, UserModel& user_model)
 {
-    // Will fork a child
-    // Eventually, rewire stdin from parent process to use some input stream
-    // Rewire stdout as well to file - print uid, time, actual, predicted, delta
-    // we define
-}
+    Event event; // FIXME: type for table
+    User user;
+    while (file.good()) {
+        read_event(&event, file);
+        user = user_model.update(&event);
+        event = antenna_model.update(&event);
 
-void handle_new_input(char* event_string)
-{
-    // Parse it
-    Event new_event = parse(event_string);
-    event_table->add_event(new_event); // Add event should mark a user as dirty
-    User* user = users->get_by_uid(new_event.get_user());
-    user->make_prediction(new_event);
-}
-
-void process_new_event()
-{
+        Path predicted_path = antenna_model.path_prediction(event->antenna_id,
+            user->next_likely_location());
+        Path predicted_path_no_endpoint = antenna_model.path_prediction(
+            event->antenna_id);
+        // FIXME: also add non-endpoint prediction
+        user->add_prediction(predicted_path);
+    }
 }
