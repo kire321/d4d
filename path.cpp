@@ -1,11 +1,13 @@
 #include "path.h"
+#include "globals.h"
+#include "antenna_model.h"
 #include "antenna.h"
 
 Path Path::interpolate_path(AntennaId start, AntennaId end,
     unsigned elapsed_time)
 {
-    Antenna* start_antenna = AntennaModel->get_antenna_by_id(start);
-    Antenna* end_antenna = AntennaModel->get_antenna_by_id(end);
+    Antenna* start_antenna = g_antenna_model->get_antenna_by_id(start);
+    Antenna* end_antenna = g_antenna_model->get_antenna_by_id(end);
 
     float start_lat = start_antenna->lat();
     float start_lon = start_antenna->lon();

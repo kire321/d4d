@@ -17,9 +17,10 @@ main.o: user.h \
 
 antenna.o: antenna.h
 user.o: user.h
-antenna_model.o: antenna_model.h
-user_model.o: user_model.h
+antenna_model.o: antenna_model.h user.h globals.h
+user_model.o: user_model.h user.h
 table.o: table.h
+path.o: path.h antenna.h antenna_model.h
 
 predictor: predictor.o
 		$(CC) -o $@ $^ $(LIBS) $(CFLAGS)
