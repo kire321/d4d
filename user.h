@@ -4,6 +4,7 @@
 #include <boost/math/distributions/normal.hpp>
 
 #include "multiDimVala.h"
+#include "types.h"
 
 using namespace boost::math;
 

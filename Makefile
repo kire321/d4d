@@ -18,6 +18,8 @@ main.o: user.h \
 antenna.o: antenna.h
 # multiDimVala.o: multiDimVala.h
 user.o: user.h
+antenna_model.o: antenna_model.h
+user_model.o: user_model.h
 
 predictor: predictor.o
 		$(CC) -o $@ $^ $(LIBS) $(CFLAGS)
