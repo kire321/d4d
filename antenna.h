@@ -14,7 +14,9 @@ class Antenna
         float lon() const { return antennas->getSingle(index,1); };
         AntennaId get_id();
 
-        Antenna nearest(multiDimVala<float> &otherAntennas);
+        float distance_from(float lat, float lon);
+
+        Antenna nearest(multiDimVala<float> &otherAntennas); // TODO: get rid
 
         void print() {cout << lat() << "\t" << lon() << endl;}
         bool operator==(const Antenna& rhs)

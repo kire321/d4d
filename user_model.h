@@ -1,6 +1,6 @@
 class UserModel
 {
-    map<UserId, User> users;
+    map<UserId, User*> users;
 
     public:
         UserModel();
