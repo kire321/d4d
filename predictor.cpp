@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 
+#include "globals.h"
 #include "antenna_model.h"
 #include "user_model.h"
 
@@ -21,11 +22,11 @@ int main(int argc, char** argv)
         cout << "Could not open file " << antenna_filename <<
           ". Skipping file." << endl;
     }
-    AntennaModel antenna_model(antenna_file);
+    g_antenna_model = AntennaModel(antenna_file);
     antenna_file.close();
 
     // Initialize new User Model
-    UserModel user_model();
+    g_user_model = UserModel();
 
     // Open file with events
     char* event_filename = argv[2];
@@ -37,7 +38,7 @@ int main(int argc, char** argv)
           ". Skipping file.\n";
     }
     // Read in events and make predictions
-    parse_events(event_file, antenna_model, user_model);
+    parse_events(event_file, g_antenna_model, g_user_model);
     event_file.close();
 
     ofstream statistics_file;

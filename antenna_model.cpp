@@ -2,6 +2,7 @@
 
 #include "antenna_model.h"
 #include "user.h"
+#include "globals.h"
 
 void AntennaModel::init()
 {
@@ -62,7 +63,7 @@ void AntennaModel::update(Event* event)
     AntennaId antenna_id = event->antenna_id;
     unsigned time = event->time;
 
-    User* user = UserModel->find_user_by_id(uid); // FIXME
+    User* user = g_user-model->find_user_by_id(uid);
     Event* last_event = user->get_last_event();
     AntennaId origin_antenna_id = last_event->antenna_id;
     unsigned elapsed_time = time - last_event->time;
