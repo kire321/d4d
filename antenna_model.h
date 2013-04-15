@@ -17,7 +17,7 @@ class AntennaModel
     // multiDimVala<float>* antennas; // TABLE
     vector<Antenna*>* antennas;
     map<AntennaId, unsigned>* antenna_id_map; // map of external id to table id
-    valarray<valarray<valarray<valarry<unsigned> > > >* transition_frequencies;
+    valarray<valarray<valarray<valarray<unsigned> > > >* transition_frequencies;
 
     public:
         AntennaModel();
@@ -25,7 +25,7 @@ class AntennaModel
         ~AntennaModel();
 
         bool add_antenna(valarray<float> antenna_data);
-        void update(Event& event);
+        void update(Event* event);
         Antenna* find_antenna_by_id(AntennaId id); // TODO: * or actual objc
         Antenna* find_nearest_antenna(float lat, float lon);
 
@@ -33,7 +33,7 @@ class AntennaModel
         Path path_prediction(AntennaId current, unsigned time);
 
     private:
-        init();
+        void init();
 
         unsigned next_step_prediction(AntennaId start, AntennaId end, unsigned elapsed_time);
         unsigned next_step_prediction(AntennaId current, unsigned elapsed_time);

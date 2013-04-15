@@ -33,15 +33,15 @@ class User
         void addEvent(valarray<int> newEvent);
         void add_event(Event* event);
 
-        void get_id() const { return id; };
+        UserId get_id() const { return id; };
 
         void set_dirty() { smoothedUpToDate = false; };
-        void is_dirty() { smoothedUpToDate != true; };
+        bool is_dirty() const { return smoothedUpToDate != true; };
 
         AntennaId next_likely_location(unsigned after_time);
 
         multiDimVala<float> getOriginal() {return multiDimVala<float>(original);}
-        multiDimVala<float> get
+        multiDimVala<float> getSmoothed();
         Event* get_last_event();
         /*Event makePrediction();*/
 };

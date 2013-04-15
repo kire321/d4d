@@ -1,3 +1,4 @@
+#include "user.h"
 #include "types.h"
 #include <map>
 
@@ -14,4 +15,4 @@ class UserModel
         bool add_user(UserId id);
         void update(Event* event);
         User* find_user_by_id(UserId id);
-}
+};

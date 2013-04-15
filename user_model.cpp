@@ -1,7 +1,5 @@
 #include "user_model.h"
 
-#include "user.h"
-
 UserModel::UserModel()
 {
     users = new map<UserId, User*>();

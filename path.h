@@ -24,6 +24,6 @@ class Path
         unsigned get_next_step(bool from_beginning = false);
         unsigned get_last_step()
         {
-            return antenna_id_sequence.size() && antenna_id_sequence.last();
+            return antenna_id_sequence.size() && antenna_id_sequence.back();
         }
 };
