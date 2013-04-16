@@ -7,6 +7,7 @@
 #include <vector>
 #include <map>
 #include <valarray>
+#include <fstream>
 
 using std::vector;
 using std::map;
@@ -16,7 +17,7 @@ class AntennaModel
 {
     // multiDimVala<float>* antennas; // TABLE
     vector<Antenna*>* antennas;
-    map<AntennaId, unsigned>* antenna_id_map; // map of external id to table id
+    map<AntennaId, unsigned> antenna_id_map; // map of external id to table id
     valarray<valarray<valarray<valarray<unsigned> > > >* transition_frequencies;
 
     public:
@@ -31,6 +32,8 @@ class AntennaModel
 
         Path path_prediction(AntennaId start, AntennaId end, unsigned time);
         Path path_prediction(AntennaId current, unsigned time);
+
+        void print_statistics(ofstream& file);
 
     private:
         void init();

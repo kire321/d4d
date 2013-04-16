@@ -22,7 +22,8 @@ user_model.o: user_model.h
 table.o: table.h
 path.o: path.h antenna.h antenna_model.h
 
-predictor: predictor.o
+predictor: predictor.o antenna.o user.o antenna_model.o user_model.o table.o \
+	path.o
 		$(CC) -o $@ $^ $(LIBS) $(CFLAGS)
 
 predictor.o: antenna_model.h user_model.h

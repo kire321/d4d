@@ -20,7 +20,7 @@ void User::add_event(Event* event)
 {
     assert(event->user_id == get_id());
 
-    Event* new_event = malloc(Event);
+    Event* new_event = (Event*)malloc(sizeof(Event));
     new_event->user_id = get_id();
     new_event->antenna_id = event->antenna_id;
     new_event->time = event->time;
@@ -31,8 +31,11 @@ void User::add_event(Event* event)
 }
 
 void User::addEvent(valarray<int> newEvent) {
+    Event event;
+    to_event(newEvent, &event);
+    add_event(&event);
+
     //number of seconds is always zero
-    add_event(to_event(newEvent));
     times.push_back(newEvent[EV_HOUR]*60+newEvent[EV_MINUTE]);
     original.push_back(antennas.getCopy(0,newEvent[EV_ANTENNA]));
     set_dirty();
@@ -49,7 +52,7 @@ void User::smooth() {
         valarray<float> denom=gauss.sum(0);
         gauss.data*=vala.data;
         smoothed.getView(0,i)=gauss.sum(0)/denom;
-    }    
+    }
 }
 
 multiDimVala<float> User::getSmoothed()
@@ -59,7 +62,7 @@ multiDimVala<float> User::getSmoothed()
     return smoothed;
 }
 
-Event* get_last_event()
+Event* User::get_last_event()
 {
     return events->back();
 }

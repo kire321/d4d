@@ -5,6 +5,7 @@
 
 #include "multiDimVala.h"
 #include "types.h"
+#include "path.h"
 #include <vector>
 
 using namespace boost::math;
@@ -24,7 +25,7 @@ class User
     vector<Event*>* events;
 
     public:
-        static void to_event(valarray<float> event_data, Event* event);
+        static void to_event(valarray<int> event_data, Event* event);
         static multiDimVala<float> antennas; // FIXME: what does this do?
 
         User(UserId id) : id(id), smoothedUpToDate(false) { events = new vector<Event*>(); };
@@ -43,5 +44,7 @@ class User
         multiDimVala<float> getOriginal() {return multiDimVala<float>(original);}
         multiDimVala<float> getSmoothed();
         Event* get_last_event();
+
+        void add_prediction(Path& predicted_path);
         /*Event makePrediction();*/
 };
