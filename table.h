@@ -59,5 +59,5 @@ public:
     // FIXME: summing over rows/columns meeting a certain condition would be nice
 };
 
-#include <Table.cpp>
+#include "table.cpp"
 

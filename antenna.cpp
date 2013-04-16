@@ -8,5 +8,6 @@ Antenna Antenna::nearest(multiDimVala<float> &otherAntennas) {
 
 float Antenna::distance_from(float lat, float lon)
 {
-    return sqrt(fabs(lattitude() - lat) + fabs(longitude() - lon));
+    return sqrt(fabs(get_latitude() - latitude) + fabs(get_longitude() -
+        longitude));
 }

@@ -3,11 +3,12 @@
 #include "antenna_model.h"
 #include "user.h"
 #include "globals.h"
+#include "utils.h"
 
 void AntennaModel::init()
 {
     antennas = new vector<Antenna*>();
-    transition_frequencies = new valarray<valarray<valarray<valarray<unsigned> > > >(2048, 0);
+    transition_frequencies = new valarray<valarray<valarray<valarray<unsigned> > > >(2048); // FIXME
 }
 
 AntennaModel::AntennaModel()
@@ -45,10 +46,10 @@ bool AntennaModel::add_antenna(valarray<float> antenna_data)
     float lon = antenna_data[2];
 
     if (!find_antenna_by_id(id)) {
-        antennas->push_back(pair<float, float>(lat, lon));
+        antennas->push_back(new Antenna(lat, lon));
         antenna_id_map[id] = antennas->size() - 1;
         if (id >= transition_frequencies->size()) {
-            transition_frequencies->resize(2 * transition_frequencies.size());
+            transition_frequencies->resize(2 * transition_frequencies->size());
         }
         return true;
     }
@@ -61,7 +62,7 @@ void AntennaModel::update(Event* event)
     AntennaId antenna_id = event->antenna_id;
     unsigned time = event->time;
 
-    User* user = g_user_model.find_user_by_id(uid);
+    User* user = g_user_model.find_user_by_id(user_id);
     Event* last_event = user->get_last_event();
     AntennaId origin_antenna_id = last_event->antenna_id;
     unsigned elapsed_time = time - last_event->time;
@@ -72,7 +73,7 @@ void AntennaModel::update(Event* event)
     // Increment next-step transition frequency for the i,j path on t time units
     AntennaId current_antenna, next_antenna;
     current_antenna = interpolated_path.get_next_step(true);
-    while (next_antenna = interpolated_path.get_next_step() !=
+    while ((next_antenna = interpolated_path.get_next_step()) !=
         interpolated_path.get_last_step()) {
         transition_frequencies[current_antenna][
             interpolated_path.get_last_step()][elapsed_time--][
@@ -145,7 +146,7 @@ AntennaId AntennaModel::next_step_prediction(AntennaId current, unsigned time)
 
     unsigned num_antennas = antennas->size();
     std::valarray<unsigned> frequencies(num_antennas);
-    for (int i = 0; i < num_antennas; i++) {
+    for (unsigned i = 0; i < num_antennas; i++) {
         unsigned num_paths = 0;
         for (int j = 0; j < num_antennas; j++) {
             num_paths += transition_frequencies[i][j][time];
