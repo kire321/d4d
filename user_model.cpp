@@ -10,19 +10,29 @@ UserModel::~UserModel()
     delete users;
 }
 
-bool add_user(UserId id)
+bool UserModel::add_user(UserId id)
 {
     if (!find_user_by_id(id)) {
-        users[id] = new User();
+        users->at(id) = new User(id);
         return true;
     }
     return false;
 }
 
-void update(Event* event)
+void UserModel::update(Event* event)
 {
     add_user(event->user_id);
     User* user = find_user_by_id(event->user_id);
 
     user->add_event(event);
+}
+
+User* UserModel::find_user_by_id(UserId id)
+{
+    return users->at(id);
+}
+
+void UserModel::print_statistics(ofstream& file)
+{
+  //TODO
 }

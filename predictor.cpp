@@ -6,10 +6,11 @@
 #include <string>
 
 #include "globals.h"
-#include "antenna_model.h"
-#include "user_model.h"
 
 using namespace std;
+
+AntennaModel g_antenna_model;
+UserModel g_user_model;
 
 void read_event(Event* event, ifstream& file)
 {

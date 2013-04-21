@@ -1,3 +1,5 @@
+#pragma once
+
 #include "user.h"
 #include "types.h"
 #include <map>

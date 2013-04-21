@@ -72,3 +72,8 @@ AntennaId User::next_likely_location(unsigned after_time)
     // FIXME: need smoothed times to be sorted
     return events->back()->antenna_id;
 }
+
+void User::add_prediction(Path& predicted_path)
+{
+    // How should we do this/store this?
+}

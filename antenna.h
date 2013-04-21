@@ -1,5 +1,6 @@
-#include "types.h"
+#pragma once
 
+#include "types.h"
 #include "multiDimVala.h"
 
 class Antenna
@@ -8,9 +9,9 @@ class Antenna
     float longitude;
 
     public:
-        Antenna(float lat, float lon) : latitude(lat), longitude(lon) {};
+        Antenna(float lat, float lon, int id) : latitude(lat), longitude(lon), index(id) {};
 
-        AntennaId get_id();
+        AntennaId get_id() const { return index; };
         float get_latitude() const { return latitude; };
         float get_longitude() const { return longitude; };
 
@@ -21,7 +22,6 @@ class Antenna
         int index;
 
         Antenna(multiDimVala<float> *argAntennas, int argIndex) : antennas(argAntennas), index(argIndex) {assert(antennas->shape[1]==2);}
-
 
         float lat() const { return antennas->getSingle(index,0); };
         float lon() const { return antennas->getSingle(index,1); };

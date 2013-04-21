@@ -4,18 +4,19 @@
 
 #include "types.h"
 
+using std::vector;
+
 class Path
 {
-    std::vector<unsigned> antenna_id_sequence;
-    std::vector<unsigned>::iterator path_iterator;
+    vector<unsigned> antenna_id_sequence;
+    vector<unsigned>::iterator path_iterator;
 
     public:
         static Path interpolate_path(AntennaId start, AntennaId end,
             unsigned time); // How do we decide partial time? do we output barycentric weighting?
 
         Path();
-        Path(std::vector<unsigned> ids, unsigned time);
-        Path operator=(const Path& other);
+        Path(std::vector<unsigned> ids);
 
         void add_step(AntennaId id);
 

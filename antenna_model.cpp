@@ -8,7 +8,8 @@
 void AntennaModel::init()
 {
     antennas = new vector<Antenna*>();
-    transition_frequencies = new valarray<valarray<valarray<valarray<unsigned> > > >(2048); // FIXME
+    transition_frequencies = (int****)calloc(2048, 2048 * 24 * 2048 *
+        sizeof(int));
 }
 
 AntennaModel::AntennaModel()
@@ -36,7 +37,7 @@ AntennaModel::AntennaModel(ifstream& file)
 AntennaModel::~AntennaModel()
 {
     delete antennas;
-    delete transition_frequencies;
+    free(transition_frequencies);
 }
 
 bool AntennaModel::add_antenna(valarray<float> antenna_data)
@@ -46,11 +47,11 @@ bool AntennaModel::add_antenna(valarray<float> antenna_data)
     float lon = antenna_data[2];
 
     if (!find_antenna_by_id(id)) {
-        antennas->push_back(new Antenna(lat, lon));
+        antennas->push_back(new Antenna(lat, lon, id));
         antenna_id_map[id] = antennas->size() - 1;
-        if (id >= transition_frequencies->size()) {
-            transition_frequencies->resize(2 * transition_frequencies->size());
-        }
+        // if (id >= transition_frequencies->size()) {
+        //     transition_frequencies->resize(2 * transition_frequencies->size());
+        // }
         return true;
     }
     return false;
@@ -75,28 +76,27 @@ void AntennaModel::update(Event* event)
     current_antenna = interpolated_path.get_next_step(true);
     while ((next_antenna = interpolated_path.get_next_step()) !=
         interpolated_path.get_last_step()) {
-        transition_frequencies[current_antenna][
-            interpolated_path.get_last_step()][elapsed_time--][
-            interpolated_path.get_first_step()]++;
+        transition_frequencies[current_antenna][interpolated_path.get_last_step()][elapsed_time--][interpolated_path.get_first_step()]++;
     }
 }
 
 Antenna* AntennaModel::find_antenna_by_id(AntennaId id)
 {
-    return antennas[antenna_id_map[id]];
+    return antennas->at(antenna_id_map[id]);
 }
 
 Antenna* AntennaModel::find_nearest_antenna(float lat, float lon)
 {
     // TODO: make more efficient
-    AntennaId nearest = (*antennas->begin())->get_id();
+    Antenna* nearest = *antennas->begin();
     vector<Antenna*>::iterator ant;
     for (ant = antennas->begin() + 1; ant != antennas->end(); ant++) {
         if ((*ant)->distance_from(lat, lon) <
-            nearest.distance_from(lat, lon)) {
-            nearest = (*ant)->get_id();
+            nearest->distance_from(lat, lon)) {
+            nearest = *ant;
         }
     }
+    return nearest;
 }
 
 Path AntennaModel::path_prediction(AntennaId start, AntennaId end,
@@ -131,8 +131,8 @@ AntennaId AntennaModel::next_step_prediction(AntennaId start, AntennaId end, uns
 {
     std::default_random_engine generator;
 
-    std::vector<unsigned> frequencies =
-        transition_frequencies[start][end][time];
+    vector<unsigned> frequencies(&transition_frequencies[start][end][time][0],
+        &transition_frequencies[start][end][time][antennas->size()]);
     // FIXME: will choke if distribution is all 0s
     std::discrete_distribution<int> distribution(frequencies.begin(),
         frequencies.end());
@@ -145,11 +145,13 @@ AntennaId AntennaModel::next_step_prediction(AntennaId current, unsigned time)
     std::default_random_engine generator;
 
     unsigned num_antennas = antennas->size();
-    std::valarray<unsigned> frequencies(num_antennas);
+    vector<unsigned> frequencies(num_antennas);
     for (unsigned i = 0; i < num_antennas; i++) {
         unsigned num_paths = 0;
-        for (int j = 0; j < num_antennas; j++) {
-            num_paths += transition_frequencies[i][j][time];
+        for (unsigned j = 0; j < num_antennas; j++) {
+            for(unsigned k = 0; k < 24; k++) {
+                num_paths += transition_frequencies[current][j][k][i]; // FIXME: slow as heck
+            }
         }
         frequencies[i] = num_paths;
     }
@@ -158,4 +160,9 @@ AntennaId AntennaModel::next_step_prediction(AntennaId current, unsigned time)
         frequencies.end());
 
     return distribution(generator);
+}
+
+void AntennaModel::print_statistics(ofstream& file)
+{
+  // TODO
 }

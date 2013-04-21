@@ -1,11 +1,8 @@
-//This include makes it easier to edit this file with VS
-#include "multiDimVala.h"
-
 template <class T>
 int argmin(valarray<T> vala) {
     assert(vala.size()>=1);
     int minIndex=0;
-    for (int i=0; i<vala.size(); ++i)
+    for (unsigned i=0; i<vala.size(); ++i)
         if (vala[i]<vala[minIndex])
             minIndex=i;
     return minIndex;

@@ -18,7 +18,7 @@ class AntennaModel
     // multiDimVala<float>* antennas; // TABLE
     vector<Antenna*>* antennas;
     map<AntennaId, unsigned> antenna_id_map; // map of external id to table id
-    valarray<valarray<valarray<valarray<unsigned> > > >* transition_frequencies;
+    int**** transition_frequencies;
 
     public:
         AntennaModel();
