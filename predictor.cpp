@@ -6,6 +6,7 @@
 #include <string>
 
 #include "globals.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -14,11 +15,23 @@ UserModel g_user_model;
 
 void read_event(Event* event, ifstream& file)
 {
+    string line;
+    getline(file,line);
+    valarray<int> splitLine;
+    try {
+        splitLine=splitConvert<int>(line,"\t :-");
+    } catch (...) {
+        cout << "Failed to parse a line of events\n";
+        return;
+    }
+    if (splitLine[EV_ANTENNA]!=-1) {
+      User::to_event(splitLine, event);
+    }
 }
 
 void parse_events(ifstream& file, AntennaModel& antenna_model, UserModel& user_model)
 {
-    Event event; // FIXME: type for table
+    Event event;
     while (file.good()) {
         read_event(&event, file);
         user_model.update(&event);
@@ -28,6 +41,7 @@ void parse_events(ifstream& file, AntennaModel& antenna_model, UserModel& user_m
         Path predicted_path = antenna_model.path_prediction(event.antenna_id,
             user->next_likely_location(event.time), event.time);
         // FIXME: also add non-endpoint prediction
+        // Rerun with non-endpoint prediction
         Path predicted_path_no_endpoint = antenna_model.path_prediction(
             event.antenna_id, event.time);
         user->add_prediction(predicted_path);

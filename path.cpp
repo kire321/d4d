@@ -46,7 +46,7 @@ void Path::add_step(AntennaId id)
     antenna_id_sequence.push_back(id);
 }
 
-unsigned Path::get_next_step(bool from_beginning)
+AntennaId Path::get_next_step(bool from_beginning)
 {
     if (from_beginning) {
         path_iterator = antenna_id_sequence.begin();
@@ -55,7 +55,7 @@ unsigned Path::get_next_step(bool from_beginning)
     if (path_iterator != antenna_id_sequence.end()) {
         return (*path_iterator++);
     } else {
-        return 0; // FIXME: return val
+        return -1;
     }
 
 }

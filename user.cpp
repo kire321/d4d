@@ -1,19 +1,16 @@
 #include "user.h"
+#include "utils.h"
 #include <cstdlib> // TODO: remove me
 #include <assert.h>
 
 multiDimVala<float> User::antennas = multiDimVala<float>();
 
-void User::to_event(valarray<int> event_data, Event* event)
-{
-    event->user_id = event_data[EV_UID];
-    event->antenna_id = event_data[EV_ANTENNA];
-    event->time = event_data[EV_HOUR]; // FIXME: no minutes in here
-}
-
 User::~User()
 {
-  // TODO: delete all vevents
+    for (unsigned i = 0; i < events->size(); i++) {
+        free(events->at(i));
+    }
+    delete events;
 }
 
 void User::add_event(Event* event)
@@ -23,14 +20,18 @@ void User::add_event(Event* event)
     Event* new_event = (Event*)malloc(sizeof(Event));
     new_event->user_id = get_id();
     new_event->antenna_id = event->antenna_id;
-    new_event->time = event->time;
+    new_event->day = event->day;
+    new_event->hour = event->hour;
 
     events->push_back(new_event);
+    std::cout << to_json(new_event, false) << std::endl;
 
     set_dirty();
 }
 
 void User::addEvent(valarray<int> newEvent) {
+    // TODO: would it be easier to make it work with add_event i.e. using Event*, whichd
+    // packages date/time info for you?
     Event event;
     to_event(newEvent, &event);
     add_event(&event);
@@ -44,7 +45,7 @@ void User::addEvent(valarray<int> newEvent) {
 void User::smooth() {
     smoothedUpToDate=true;
     multiDimVala<float> vala(original);
-    smoothed=multiDimVala<float>(original.size(),2);
+    smoothed = multiDimVala<float>(original.size(),2);
     for (unsigned i=0; i<original.size(); ++i) {
         multiDimVala<float> gauss(times.size(),2);
         for (unsigned j=0; j<times.size(); ++j)
@@ -73,7 +74,15 @@ AntennaId User::next_likely_location(unsigned after_time)
     return events->back()->antenna_id;
 }
 
-void User::add_prediction(Path& predicted_path)
+void User::make_prediction(Path& predicted_path, unsigned day, unsigned hour)
 {
-    // How should we do this/store this?
+    AntennaId predicted_antenna = predicted_path.get_next_step(true);
+    while (predicted_antenna > 0) { // Is a valid antenna
+        Event* new_predicted_event = (Event*)malloc(sizeof(Event));
+        new_predicted_event->user_id = id;
+        new_predicted_event->antenna_id = predicted_antenna;
+        new_predicted_event->day = day;
+        new_predicted_event->hour = hour;
+        std::cout << to_json(new_predicted_event, true) << std::endl;
+    }
 }

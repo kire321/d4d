@@ -19,5 +19,5 @@ class UserModel
         void update(Event* event);
         User* find_user_by_id(UserId id);
 
-        void print_statistics(ofstream& file);
+        void print_statistics(ofstream& file) const;
 };

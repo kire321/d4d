@@ -1,10 +1,13 @@
 #pragma once
 
-typedef unsigned UserId;
-typedef unsigned AntennaId;
+typedef int UserId;
+typedef int AntennaId;
 
 typedef struct event {
     UserId user_id;
     AntennaId antenna_id;
-    unsigned time;
+    int day;
+    int hour;
 } Event;
+
+// FIXME unsigned -> signed int

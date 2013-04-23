@@ -25,7 +25,6 @@ class User
     vector<Event*>* events;
 
     public:
-        static void to_event(valarray<int> event_data, Event* event);
         static multiDimVala<float> antennas; // FIXME: what does this do?
 
         User(UserId id) : id(id), smoothedUpToDate(false) { events = new vector<Event*>(); };
@@ -35,6 +34,8 @@ class User
         void add_event(Event* event);
 
         UserId get_id() const { return id; };
+        vector<Event*>* get_events() const { return events; };
+        vector<Event*>* get_predictions() const { return predicted_events; };
 
         void set_dirty() { smoothedUpToDate = false; };
         bool is_dirty() const { return smoothedUpToDate != true; };
@@ -45,6 +46,5 @@ class User
         multiDimVala<float> getSmoothed();
         Event* get_last_event();
 
-        void add_prediction(Path& predicted_path);
-        /*Event makePrediction();*/
+        void make_prediction(Path& predicted_path, unsigned day, unsigned time);
 };

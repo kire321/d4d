@@ -22,11 +22,11 @@ class Path
 
         unsigned get_elapsed_time() { return antenna_id_sequence.size(); };
         // Iterator that returns next step
-        unsigned get_next_step(bool from_beginning = false);
-        unsigned get_first_step() {
+        AntennaId get_next_step(bool from_beginning = false);
+        AntennaId get_first_step() {
             return antenna_id_sequence.size() && antenna_id_sequence.front();
         }
-        unsigned get_last_step()
+        AntennaId get_last_step()
         {
             return antenna_id_sequence.size() && antenna_id_sequence.back();
         }

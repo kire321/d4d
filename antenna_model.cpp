@@ -10,6 +10,17 @@ void AntennaModel::init()
     antennas = new vector<Antenna*>();
     transition_frequencies = (int****)calloc(2048, 2048 * 24 * 2048 *
         sizeof(int));
+    // Initialize distribution to be uniform (no, there's no easier way to do
+    // this)
+    for (int i = 0; i < 2048; i++) {
+        for (int j = 0; j < 2048; j++) {
+            for (int k = 0; k < 24; k++) {
+                for (int l = 0; l < 2048; l++) {
+                    transition_frequencies[i][j][k][l] = 1;
+                }
+            }
+        }
+    }
 }
 
 AntennaModel::AntennaModel()
@@ -133,7 +144,6 @@ AntennaId AntennaModel::next_step_prediction(AntennaId start, AntennaId end, uns
 
     vector<unsigned> frequencies(&transition_frequencies[start][end][time][0],
         &transition_frequencies[start][end][time][antennas->size()]);
-    // FIXME: will choke if distribution is all 0s
     std::discrete_distribution<int> distribution(frequencies.begin(),
         frequencies.end());
 
@@ -150,7 +160,7 @@ AntennaId AntennaModel::next_step_prediction(AntennaId current, unsigned time)
         unsigned num_paths = 0;
         for (unsigned j = 0; j < num_antennas; j++) {
             for(unsigned k = 0; k < 24; k++) {
-                num_paths += transition_frequencies[current][j][k][i]; // FIXME: slow as heck
+                num_paths += transition_frequencies[current][j][k][i]; // TODO: slow as heck
             }
         }
         frequencies[i] = num_paths;
