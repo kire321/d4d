@@ -64,7 +64,6 @@ int main(int argc, char** argv)
         cout << "Could not open file " << antenna_filename <<
           ". Skipping file." << endl;
     }
-    cout << "yo\n";
     AntennaModel::init(antenna_file);
     antenna_file.close();
 
@@ -81,14 +80,15 @@ int main(int argc, char** argv)
     }
     // Read in events and make predictions
     parse_events(event_file);
+
     event_file.close();
 
-    ofstream statistics_file;
-    try {
-        statistics_file.open("stats.txt", ios_base::out);
-    } catch (...) {
-        cout << "Could not open stats file for writing.\n";
-    }
+    // ofstream statistics_file;
+    // try {
+    //     statistics_file.open("stats.txt", ios_base::out);
+    // } catch (...) {
+    //     cout << "Could not open stats file for writing.\n";
+    // }
     // g_antenna_model.print_statistics(statistics_file);
     // g_user_model.print_statistics(statistics_file);
 

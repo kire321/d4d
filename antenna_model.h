@@ -19,9 +19,10 @@ class AntennaModel
 
     public:
         // Members
-        static vector<Antenna*>* antennas;
+        static vector<Antenna*> antennas;
         static map<AntennaId, unsigned> antenna_id_map; // FIXME: delete
-        static int**** transition_frequencies;
+        static map<AntennaId, map<AntennaId, map<unsigned, map<AntennaId,
+            unsigned> > > > transition_frequencies;
 
         // Initialize
         static void init(ifstream& file);

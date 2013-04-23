@@ -5,28 +5,16 @@
 #include "user_model.h"
 #include "user.h"
 
-vector<Antenna*>* AntennaModel::antennas = NULL;
-int**** AntennaModel::transition_frequencies = NULL;
+vector<Antenna*> AntennaModel::antennas = vector<Antenna*>();
+map<AntennaId, map<AntennaId, map<unsigned, map<AntennaId,
+    unsigned> > > > AntennaModel::transition_frequencies =
+    map<AntennaId, map<AntennaId, map<unsigned, map<AntennaId,
+    unsigned> > > >();
 map<AntennaId, unsigned> AntennaModel::antenna_id_map =
     map<AntennaId, unsigned>();
 
 void AntennaModel::init(ifstream& file)
 {
-    antennas = new vector<Antenna*>();
-    transition_frequencies = (int****)calloc(2048, 2048 * 24 * 2048 * sizeof(int));
-
-    // Initialize distribution to be uniform (no, there's no easier way to do
-    // this)
-    for (int i = 0; i < 2048; i++) {
-        for (int j = 0; j < 2048; j++) {
-            for (int k = 0; k < 24; k++) {
-                for (int l = 0; l < 2048; l++) {
-                    transition_frequencies[i][j][k][l] = 1;
-                }
-            }
-        }
-    }
-
     string line;
     while (file.good()) {
         getline(file, line);
@@ -47,8 +35,8 @@ bool AntennaModel::add_antenna(valarray<float> antenna_data)
     float lon = antenna_data[2];
 
     if (!find_antenna_by_id(id)) {
-        antennas->push_back(new Antenna(lat, lon, id));
-        antenna_id_map[id] = antennas->size() - 1;
+        antennas.push_back(new Antenna(lat, lon, id));
+        antenna_id_map[id] = antennas.size() - 1;
         // if (id >= transition_frequencies->size()) {
         //     transition_frequencies->resize(2 * transition_frequencies->size());
         // }
@@ -77,21 +65,27 @@ void AntennaModel::update(Event* event)
     current_antenna = interpolated_path.get_next_step(true);
     while ((next_antenna = interpolated_path.get_next_step()) !=
         interpolated_path.get_last_step()) {
-        transition_frequencies[current_antenna][interpolated_path.get_last_step()][elapsed_time--][interpolated_path.get_first_step()]++;
+        map<AntennaId, unsigned> ij_paths_of_correct_length =
+            transition_frequencies[current_antenna][interpolated_path.get_last_step()][elapsed_time--];
+        if (ij_paths_of_correct_length.find(interpolated_path.get_first_step()) ==
+            ij_paths_of_correct_length.end()) {
+            ij_paths_of_correct_length[interpolated_path.get_first_step()] = 0;
+        }
+        ij_paths_of_correct_length[interpolated_path.get_first_step()]++;
     }
 }
 
 Antenna* AntennaModel::find_antenna_by_id(AntennaId id)
 {
-    return antennas->at(antenna_id_map[id]);
+    return antennas.at(antenna_id_map[id]);
 }
 
 Antenna* AntennaModel::find_nearest_antenna(float lat, float lon)
 {
     // TODO: make more efficient
-    Antenna* nearest = *(antennas->begin());
+    Antenna* nearest = *(antennas.begin());
     vector<Antenna*>::iterator ant;
-    for (ant = antennas->begin() + 1; ant != antennas->end(); ant++) {
+    for (ant = antennas.begin() + 1; ant != antennas.end(); ant++) {
         if ((*ant)->distance_from(lat, lon) <
             nearest->distance_from(lat, lon)) {
             nearest = *ant;
@@ -133,7 +127,7 @@ AntennaId AntennaModel::next_step_prediction(AntennaId start, AntennaId end, uns
     std::default_random_engine generator;
 
     vector<unsigned> frequencies(&transition_frequencies[start][end][time][0],
-        &transition_frequencies[start][end][time][antennas->size()]);
+        &transition_frequencies[start][end][time][antennas.size()]);
     std::discrete_distribution<int> distribution(frequencies.begin(),
         frequencies.end());
 
@@ -144,7 +138,7 @@ AntennaId AntennaModel::next_step_prediction(AntennaId current, unsigned time)
 {
     std::default_random_engine generator;
 
-    unsigned num_antennas = antennas->size();
+    unsigned num_antennas = antennas.size();
     vector<unsigned> frequencies(num_antennas);
     for (unsigned i = 0; i < num_antennas; i++) {
         unsigned num_paths = 0;
