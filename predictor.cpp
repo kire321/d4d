@@ -37,8 +37,12 @@ void parse_events(ifstream& file)
         AntennaModel::update(&event);
 
         User* user = UserModel::find_user_by_id(event.user_id);
+        AntennaId likely_location;
+        unsigned likely_duration;
+        user->next_likely_location(event.hour, &likely_location,
+            &likely_duration);
         Path predicted_path = AntennaModel::path_prediction(event.antenna_id,
-            user->next_likely_location(event.hour), event.hour);
+            likely_location, likely_duration);
         // Rerun with non-endpoint prediction
         // Path predicted_path_no_endpoint = antenna_model.path_prediction(
         //     event.antenna_id, event.hour);

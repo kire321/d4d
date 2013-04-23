@@ -108,6 +108,7 @@ bool comparison(ii i, ii j) {
 }
 
 
+// TODO: out_time is length or #?
 void User::next_likely_location(unsigned after_time, unsigned *out_time, AntennaId *out_ant)
 {
 	vector<ii> zipped;
