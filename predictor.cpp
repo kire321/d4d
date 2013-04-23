@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <cstdlib>
 #include <cstdio>
 
@@ -54,7 +55,7 @@ int main(int argc, char** argv)
 {
     // Initialize Antenna Model
     assert(argc > 2);
-    char* antenna_filename = argv[0];
+    char* antenna_filename = argv[1];
     ifstream antenna_file;
     string line;
     try {
@@ -63,13 +64,14 @@ int main(int argc, char** argv)
         cout << "Could not open file " << antenna_filename <<
           ". Skipping file." << endl;
     }
+    cout << "yo\n";
     AntennaModel::init(antenna_file);
     antenna_file.close();
 
     UserModel::init();
 
     // Open file with events
-    char* event_filename = argv[1];
+    char* event_filename = argv[2];
     ifstream event_file;
     try {
         event_file.open(event_filename);
