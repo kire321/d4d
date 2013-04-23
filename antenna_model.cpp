@@ -1,15 +1,20 @@
 #include <random>
 
 #include "antenna_model.h"
-#include "user.h"
-#include "globals.h" // This could get screwy
 #include "utils.h"
+#include "user_model.h"
+#include "user.h"
 
-void AntennaModel::init()
+vector<Antenna*>* AntennaModel::antennas = NULL;
+int**** AntennaModel::transition_frequencies = NULL;
+map<AntennaId, unsigned> AntennaModel::antenna_id_map =
+    map<AntennaId, unsigned>();
+
+void AntennaModel::init(ifstream& file)
 {
     antennas = new vector<Antenna*>();
-    transition_frequencies = (int****)calloc(2048, 2048 * 24 * 2048 *
-        sizeof(int));
+    transition_frequencies = (int****)calloc(2048, 2048 * 24 * 2048 * sizeof(int));
+
     // Initialize distribution to be uniform (no, there's no easier way to do
     // this)
     for (int i = 0; i < 2048; i++) {
@@ -21,16 +26,6 @@ void AntennaModel::init()
             }
         }
     }
-}
-
-AntennaModel::AntennaModel()
-{
-    init();
-}
-
-AntennaModel::AntennaModel(ifstream& file)
-{
-    init();
 
     string line;
     while (file.good()) {
@@ -43,12 +38,6 @@ AntennaModel::AntennaModel(ifstream& file)
             cout << "Failed to parse a line in antenna file. Continuing." << endl;
         }
     }
-}
-
-AntennaModel::~AntennaModel()
-{
-    delete antennas;
-    free(transition_frequencies);
 }
 
 bool AntennaModel::add_antenna(valarray<float> antenna_data)
@@ -74,7 +63,7 @@ void AntennaModel::update(Event* event)
     AntennaId antenna_id = event->antenna_id;
     unsigned hour = event->hour;
 
-    User* user = g_user_model.find_user_by_id(user_id);
+    User* user = UserModel::find_user_by_id(user_id);
     Event* last_event = user->get_last_event();
     AntennaId origin_antenna_id = last_event->antenna_id;
     unsigned elapsed_time = hour - last_event->hour;
@@ -100,7 +89,7 @@ Antenna* AntennaModel::find_antenna_by_id(AntennaId id)
 Antenna* AntennaModel::find_nearest_antenna(float lat, float lon)
 {
     // TODO: make more efficient
-    Antenna* nearest = *antennas->begin();
+    Antenna* nearest = *(antennas->begin());
     vector<Antenna*>::iterator ant;
     for (ant = antennas->begin() + 1; ant != antennas->end(); ant++) {
         if ((*ant)->distance_from(lat, lon) <

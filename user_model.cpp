@@ -1,13 +1,10 @@
 #include "user_model.h"
 
-UserModel::UserModel()
+map<UserId, User*>* UserModel::users = NULL;
+
+void UserModel::init()
 {
     users = new map<UserId, User*>();
-}
-
-UserModel::~UserModel()
-{
-    delete users;
 }
 
 bool UserModel::add_user(UserId id)

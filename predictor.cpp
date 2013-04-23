@@ -5,13 +5,12 @@
 #include <fstream>
 #include <string>
 
-#include "globals.h"
+#include "types.h"
 #include "utils.h"
+#include "antenna_model.h"
+#include "user_model.h"
 
 using namespace std;
-
-AntennaModel g_antenna_model;
-UserModel g_user_model;
 
 void read_event(Event* event, ifstream& file)
 {
@@ -29,17 +28,17 @@ void read_event(Event* event, ifstream& file)
     }
 }
 
-void parse_events(ifstream& file, AntennaModel& antenna_model, UserModel& user_model)
+void parse_events(ifstream& file)
 {
     Event event;
     while (file.good()) {
         read_event(&event, file);
-        user_model.update(&event);
-        antenna_model.update(&event);
+        UserModel::update(&event);
+        AntennaModel::update(&event);
 
-        User* user = user_model.find_user_by_id(event.user_id);
-        Path predicted_path = antenna_model.path_prediction(event.antenna_id,
-        user->next_likely_location(event.hour), event.hour);
+        User* user = UserModel::find_user_by_id(event.user_id);
+        Path predicted_path = AntennaModel::path_prediction(event.antenna_id,
+            user->next_likely_location(event.hour), event.hour);
         // Rerun with non-endpoint prediction
         // Path predicted_path_no_endpoint = antenna_model.path_prediction(
         //     event.antenna_id, event.hour);
@@ -50,7 +49,8 @@ void parse_events(ifstream& file, AntennaModel& antenna_model, UserModel& user_m
 int main(int argc, char** argv)
 {
     // Initialize Antenna Model
-    char* antenna_filename = argv[1];
+    assert(argc > 2);
+    char* antenna_filename = argv[0];
     ifstream antenna_file;
     string line;
     try {
@@ -59,14 +59,13 @@ int main(int argc, char** argv)
         cout << "Could not open file " << antenna_filename <<
           ". Skipping file." << endl;
     }
-    g_antenna_model = AntennaModel(antenna_file);
+    AntennaModel::init(antenna_file);
     antenna_file.close();
 
-    // Initialize new User Model
-    g_user_model = UserModel();
+    UserModel::init();
 
     // Open file with events
-    char* event_filename = argv[2];
+    char* event_filename = argv[1];
     ifstream event_file;
     try {
         event_file.open(event_filename);
@@ -75,7 +74,7 @@ int main(int argc, char** argv)
           ". Skipping file.\n";
     }
     // Read in events and make predictions
-    parse_events(event_file, g_antenna_model, g_user_model);
+    parse_events(event_file);
     event_file.close();
 
     ofstream statistics_file;

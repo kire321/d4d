@@ -9,15 +9,13 @@ using std::map;
 
 class UserModel
 {
-    map<UserId, User*>* users;
-
     public:
-        UserModel();
-        ~UserModel();
+        static map<UserId, User*>* users;
 
-        bool add_user(UserId id);
-        void update(Event* event);
-        User* find_user_by_id(UserId id);
+        static void init();
+        static bool add_user(UserId id);
+        static void update(Event* event);
+        static User* find_user_by_id(UserId id);
 
         // void print_statistics(ofstream& file) const;
 };
