@@ -2,6 +2,12 @@
 #include <assert.h>
 #include <iostream>
 
+// #include <boost/property_tree/ptree.hpp>
+// #include <boost/property_tree/json_parser.hpp>
+// 
+// using boost::property_tree::ptree;
+// using boost::property_tree::write_json;
+
 #include "user.h"
 
 multiDimVala<float> User::antennas = multiDimVala<float>();
@@ -17,7 +23,17 @@ void User::to_event(valarray<int> event_data, Event* event)
 
 string User::to_json(Event* event, bool is_prediction)
 {
-    string json;
+    string json("{\n");
+    json.append("\t\"uid\" : %d\n", event->user_id);
+    json.append("\t\"time\" :\n");
+    json.append("\t{\n");
+    json.append("\t\t\"day\" : %d\n", event->day);
+    json.append("\t\t\"hour\" : %d\n", event->hour);
+    json.append("\t}\n");
+    json.append("\t\"antenna\" : %d\n", event->antenna_id);
+    json.append("\t\"is_prediction\" : %s\n",
+        (is_prediction ? "true" : "false"));
+    json.append("}");
 
     return json;
 }
