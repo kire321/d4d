@@ -39,7 +39,7 @@ void parse_events(ifstream& file, AntennaModel& antenna_model, UserModel& user_m
 
         User* user = user_model.find_user_by_id(event.user_id);
         Path predicted_path = antenna_model.path_prediction(event.antenna_id,
-            user->next_likely_location(event.time), event.time);
+            user->next_likely_location(event.time), event.time); //ERIK:FIXME: this line got screwed up by the new signature for next_likely_location
         // FIXME: also add non-endpoint prediction
         // Rerun with non-endpoint prediction
         Path predicted_path_no_endpoint = antenna_model.path_prediction(

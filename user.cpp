@@ -68,10 +68,27 @@ Event* User::get_last_event()
     return events->back();
 }
 
-AntennaId User::next_likely_location(unsigned after_time)
+typedef pair<int,int> ii;
+bool comparison(ii i, ii j) {
+	//sort based on the first value
+	return i.first<j.first;
+}
+
+
+void User::next_likely_location(unsigned after_time, unsigned *out_time, AntennaId *out_ant)
 {
-    // FIXME: need smoothed times to be sorted
-    return events->back()->antenna_id;
+	vector<ii> zipped;
+	for(int i=0; i<times.size(); ++i)
+		zipped.push_back(ii(times[i],i));
+	sort(zipped.begin(), zipped.end(), comparison);
+	//The following slow search doesn't affect running time since we just did a sort which is slower
+	int i=0;
+	for(; i<zipped.size(); ++i)
+		if(zipped[i].first>after_time)
+			break;
+	*out_time=zipped[i].first;
+	valarray<float> latLon=getSmoothed().getCopy(0,zipped[i].second);
+	*out_ant=g_antenna_model.find_nearest_antenna(latLon[0],latLon[1])->get_id();
 }
 
 void User::make_prediction(Path& predicted_path, unsigned day, unsigned hour)

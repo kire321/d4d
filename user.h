@@ -2,6 +2,8 @@
 
 #include <string>
 #include <boost/math/distributions/normal.hpp>
+#include "globals.h"
+#include <algorithm>
 
 #include "multiDimVala.h"
 #include "types.h"
@@ -40,7 +42,7 @@ class User
         void set_dirty() { smoothedUpToDate = false; };
         bool is_dirty() const { return smoothedUpToDate != true; };
 
-        AntennaId next_likely_location(unsigned after_time);
+        void next_likely_location(unsigned after_time, unsigned *out_time, AntennaId *out_ant);
 
         multiDimVala<float> getOriginal() {return multiDimVala<float>(original);}
         multiDimVala<float> getSmoothed();
