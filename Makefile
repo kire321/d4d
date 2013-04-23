@@ -21,7 +21,6 @@ main.o: user.h \
 	antenna.h
 
 # %.o: %.cpp %.h
-# table.o
 
 antenna.o: antenna.cpp antenna.h
 	$(CC) -c $< -o $@ $(CFLAGS)
@@ -29,13 +28,11 @@ user.o: user.cpp user.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 antenna_model.o: antenna_model.cpp antenna_model.h user.h globals.h utils.h
 	$(CC) -c $< -o $@ $(CFLAGS)
-user_model.o: user_model.cpp user_model.h
+user_model.o: user_model.cpp user_model.h globals.h
 	$(CC) -c $< -o $@ $(CFLAGS)
-# table.o: table.cpp table.h
-# 	$(CC) -c $< -o $@ $(CFLAGS)
 path.o: path.cpp path.h antenna.h antenna_model.h
 	$(CC) -c $< -o $@ $(CFLAGS)
-predictor.o: predictor.cpp antenna_model.h user_model.h
+predictor.o: predictor.cpp antenna_model.h user_model.h utils.h globals.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 clean:

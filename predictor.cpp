@@ -25,7 +25,7 @@ void read_event(Event* event, ifstream& file)
         return;
     }
     if (splitLine[EV_ANTENNA]!=-1) {
-      User::to_event(splitLine, event);
+        User::to_event(splitLine, event);
     }
 }
 
@@ -39,12 +39,11 @@ void parse_events(ifstream& file, AntennaModel& antenna_model, UserModel& user_m
 
         User* user = user_model.find_user_by_id(event.user_id);
         Path predicted_path = antenna_model.path_prediction(event.antenna_id,
-            user->next_likely_location(event.time), event.time); //ERIK:FIXME: this line got screwed up by the new signature for next_likely_location
-        // FIXME: also add non-endpoint prediction
+        user->next_likely_location(event.hour), event.hour);
         // Rerun with non-endpoint prediction
-        Path predicted_path_no_endpoint = antenna_model.path_prediction(
-            event.antenna_id, event.time);
-        user->add_prediction(predicted_path);
+        // Path predicted_path_no_endpoint = antenna_model.path_prediction(
+        //     event.antenna_id, event.hour);
+        user->make_prediction(predicted_path, event.day, event.hour);
     }
 }
 
@@ -85,8 +84,8 @@ int main(int argc, char** argv)
     } catch (...) {
         cout << "Could not open stats file for writing.\n";
     }
-    g_antenna_model.print_statistics(statistics_file);
-    g_user_model.print_statistics(statistics_file);
+    // g_antenna_model.print_statistics(statistics_file);
+    // g_user_model.print_statistics(statistics_file);
 
     return EXIT_SUCCESS;
 }

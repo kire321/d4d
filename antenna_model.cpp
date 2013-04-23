@@ -2,7 +2,7 @@
 
 #include "antenna_model.h"
 #include "user.h"
-#include "globals.h"
+#include "globals.h" // This could get screwy
 #include "utils.h"
 
 void AntennaModel::init()
@@ -72,15 +72,16 @@ void AntennaModel::update(Event* event)
 {
     UserId user_id = event->user_id;
     AntennaId antenna_id = event->antenna_id;
-    unsigned time = event->time;
+    unsigned hour = event->hour;
 
     User* user = g_user_model.find_user_by_id(user_id);
     Event* last_event = user->get_last_event();
     AntennaId origin_antenna_id = last_event->antenna_id;
-    unsigned elapsed_time = time - last_event->time;
+    unsigned elapsed_time = hour - last_event->hour;
+    if (elapsed_time < 0) elapsed_time += 24;
 
     Path interpolated_path = Path::interpolate_path(origin_antenna_id,
-        antenna_id, time);
+        antenna_id, hour);
 
     // Increment next-step transition frequency for the i,j path on t time units
     AntennaId current_antenna, next_antenna;
@@ -170,9 +171,4 @@ AntennaId AntennaModel::next_step_prediction(AntennaId current, unsigned time)
         frequencies.end());
 
     return distribution(generator);
-}
-
-void AntennaModel::print_statistics(ofstream& file)
-{
-  // TODO
 }

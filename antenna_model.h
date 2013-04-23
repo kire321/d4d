@@ -33,11 +33,11 @@ class AntennaModel
         Path path_prediction(AntennaId start, AntennaId end, unsigned time);
         Path path_prediction(AntennaId current, unsigned time);
 
-        void print_statistics(ofstream& file);
+        // void print_statistics(ofstream& file);
 
     private:
         void init();
 
-        unsigned next_step_prediction(AntennaId start, AntennaId end, unsigned elapsed_time);
-        unsigned next_step_prediction(AntennaId current, unsigned elapsed_time);
+        AntennaId next_step_prediction(AntennaId start, AntennaId end, unsigned elapsed_time);
+        AntennaId next_step_prediction(AntennaId current, unsigned elapsed_time);
 };

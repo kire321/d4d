@@ -1,9 +1,26 @@
-#include "user.h"
-#include "utils.h"
 #include <cstdlib> // TODO: remove me
 #include <assert.h>
+#include <iostream>
+
+#include "user.h"
 
 multiDimVala<float> User::antennas = multiDimVala<float>();
+
+void User::to_event(valarray<int> event_data, Event* event)
+{
+    event->user_id = event_data[EV_UID];
+    event->antenna_id = event_data[EV_ANTENNA];
+    event->day = (event_data[EV_YEAR] - 2000) * 10000 +
+        event_data[EV_MONTH] * 100 + EV_DAY; // Hack to get unique days
+    event->hour = event_data[EV_HOUR];
+}
+
+string User::to_json(Event* event, bool is_prediction)
+{
+    string json;
+
+    return json;
+}
 
 User::~User()
 {
@@ -94,7 +111,7 @@ void User::next_likely_location(unsigned after_time, unsigned *out_time, Antenna
 void User::make_prediction(Path& predicted_path, unsigned day, unsigned hour)
 {
     AntennaId predicted_antenna = predicted_path.get_next_step(true);
-    while (predicted_antenna > 0) { // Is a valid antenna
+    while (predicted_antenna >= 0) { // Is a valid antenna
         Event* new_predicted_event = (Event*)malloc(sizeof(Event));
         new_predicted_event->user_id = id;
         new_predicted_event->antenna_id = predicted_antenna;

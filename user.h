@@ -12,9 +12,6 @@
 
 using namespace boost::math;
 
-enum EV { EV_UID = 1, EV_YEAR, EV_MONTH, EV_DAY, EV_HOUR, EV_MINUTE, EV_SECOND,
-    EV_ANTENNA, EV_SIZE };
-
 class User
 {
     UserId id;
@@ -27,6 +24,9 @@ class User
     vector<Event*>* events;
 
     public:
+        static void to_event(valarray<int> event_data, Event* event);
+        static string to_json(Event* event, bool is_prediction = true);
+
         static multiDimVala<float> antennas; // FIXME: what does this do?
 
         User(UserId id) : id(id), smoothedUpToDate(false) { events = new vector<Event*>(); };
@@ -37,7 +37,6 @@ class User
 
         UserId get_id() const { return id; };
         vector<Event*>* get_events() const { return events; };
-        vector<Event*>* get_predictions() const { return predicted_events; };
 
         void set_dirty() { smoothedUpToDate = false; };
         bool is_dirty() const { return smoothedUpToDate != true; };
