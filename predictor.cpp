@@ -13,7 +13,7 @@
 
 using namespace std;
 
-void read_event(Event* event, ifstream& file)
+int read_event(Event* event, ifstream& file)
 {
     string line;
     getline(file,line);
@@ -22,18 +22,19 @@ void read_event(Event* event, ifstream& file)
         splitLine=splitConvert<int>(line,"\t :-");
     } catch (...) {
         cout << "Failed to parse a line of events\n";
-        return;
+        return -1;
     }
     if (splitLine[EV_ANTENNA]!=-1) {
         User::to_event(splitLine, event);
     }
+    return splitLine[EV_ANTENNA];
 }
 
 void parse_events(ifstream& file)
 {
     Event event;
     while (file.good()) {
-        read_event(&event, file);
+        if (read_event(&event, file) < 0) continue;
         UserModel::update(&event);
         AntennaModel::update(&event);
 
@@ -50,7 +51,9 @@ void parse_events(ifstream& file)
         // Path predicted_path_no_endpoint = antenna_model.path_prediction(
         //     event.antenna_id, event.hour);
         user->make_prediction(predicted_path, event.day, event.hour);
+        cout << "Made a prediction\n";
     }
+    cout << "Done parsing events\n";
 }
 
 int main(int argc, char** argv)
@@ -83,6 +86,7 @@ int main(int argc, char** argv)
     // Read in events and make predictions
     parse_events(event_file);
 
+    cout << "Parsed events\n";
     event_file.close();
 
     // ofstream statistics_file;

@@ -1,4 +1,5 @@
 #include <random>
+#include <iostream>
 
 #include "antenna_model.h"
 #include "utils.h"
@@ -25,7 +26,9 @@ void AntennaModel::init(ifstream& file)
         catch (...) {
             cout << "Failed to parse a line in antenna file. Continuing." << endl;
         }
+        std::cout << "Added antenna\n";
     }
+
 }
 
 bool AntennaModel::add_antenna(valarray<float> antenna_data)
