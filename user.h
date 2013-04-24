@@ -41,7 +41,7 @@ class User
         void set_dirty() { smoothedUpToDate = false; };
         bool is_dirty() const { return smoothedUpToDate != true; };
 
-        void next_likely_location(unsigned after_time, unsigned *out_time, AntennaId *out_ant);
+        void next_likely_location(unsigned after_time, unsigned* out_time, AntennaId *out_ant);
 
         multiDimVala<float> getOriginal() {return multiDimVala<float>(original);}
         multiDimVala<float> getSmoothed();

@@ -9,6 +9,7 @@
 // using boost::property_tree::write_json;
 
 #include "user.h"
+#include "antenna_model.h"
 
 multiDimVala<float> User::antennas = multiDimVala<float>();
 
@@ -112,17 +113,18 @@ bool comparison(ii i, ii j) {
 void User::next_likely_location(unsigned after_time, unsigned *out_time, AntennaId *out_ant)
 {
 	vector<ii> zipped;
-	for(int i=0; i<times.size(); ++i)
-		zipped.push_back(ii(times[i],i));
+	for (unsigned i = 0; i < times.size(); ++i) {
+      zipped.push_back(ii(times[i],i));
+  }
 	sort(zipped.begin(), zipped.end(), comparison);
 	//The following slow search doesn't affect running time since we just did a sort which is slower
-	int i=0;
-	for(; i<zipped.size(); ++i)
-		if(zipped[i].first>after_time)
-			break;
+	unsigned i = 0;
+	for (; i<zipped.size(); ++i) {
+      if (zipped[i].first > (int)after_time) break;
+  }
 	*out_time=zipped[i].first;
 	valarray<float> latLon=getSmoothed().getCopy(0,zipped[i].second);
-	*out_ant=g_antenna_model.find_nearest_antenna(latLon[0],latLon[1])->get_id();
+	*out_ant=AntennaModel::find_nearest_antenna(latLon[0],latLon[1])->get_id();
 }
 
 void User::make_prediction(Path& predicted_path, unsigned day, unsigned hour)

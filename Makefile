@@ -24,7 +24,7 @@ main.o: user.h \
 
 antenna.o: antenna.cpp antenna.h
 	$(CC) -c $< -o $@ $(CFLAGS)
-user.o: user.cpp user.h
+user.o: user.cpp user.h antenna_model.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 antenna_model.o: antenna_model.cpp antenna_model.h utils.h user_model.h user.h
 	$(CC) -c $< -o $@ $(CFLAGS)
