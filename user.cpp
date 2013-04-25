@@ -123,18 +123,14 @@ void User::next_likely_location(unsigned after_time, unsigned *out_time, Antenna
         zipped.push_back(ii(event_minute,i));
     }
     sort(zipped.begin(), zipped.end(), comparison);
-    std::cout << "Sorted locations\n";
     //The following slow search doesn't affect running time since we just did a sort which is slower
     unsigned i = 0;
     for (; i < zipped.size(); i++) {
         if (zipped[i].first > (int)after_time*60) break;
     }
     if (i == zipped.size()) i = 0;
-    cout << out_time << endl;
     ii pair1 = zipped[i];
-    cout << "hello";
     *out_time = (pair1.first + 30)/60;
-    cout << out_ant << endl;
     valarray<float> latLon=getSmoothed().getCopy(0,zipped[i].second);
     *out_ant=AntennaModel::find_nearest_antenna(latLon[0],latLon[1])->get_id();
 }
@@ -146,8 +142,14 @@ void User::make_prediction(Path& predicted_path, unsigned day, unsigned hour)
         Event* new_predicted_event = (Event*)malloc(sizeof(Event));
         new_predicted_event->user_id = id;
         new_predicted_event->antenna_id = predicted_antenna;
+        if (hour >= 24) {
+            hour = 0;
+            day++; // Should only happen once, if at all
+        }
+        new_predicted_event->hour = hour++;
         new_predicted_event->day = day;
-        new_predicted_event->hour = hour;
         std::cout << to_json(new_predicted_event, true) << std::endl;
+
+        predicted_antenna = predicted_path.get_next_step();
     }
 }

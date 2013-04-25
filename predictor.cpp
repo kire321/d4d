@@ -26,7 +26,7 @@ int read_event(Event* event, ifstream& file)
     }
     if (splitLine[EV_ANTENNA]!=-1) {
         User::to_event(splitLine, event);
-        cerr << "Converted to event";
+        if (LOG) cerr << "Converted to event";
     }
     return splitLine[EV_ANTENNA];
 }
@@ -36,32 +36,32 @@ void parse_events(ifstream& file)
     Event event;
     while (file.good()) {
         if (read_event(&event, file) < 0) continue;
-        cerr << "Read event\n";
+        if (LOG) cerr << "Read event\n";
         UserModel::update(&event);
-        cerr << "Updated user model\n";
+        if (LOG) cerr << "Updated user model\n";
         AntennaModel::update(&event);
-        cerr << "Updated Antenna model\n";
+        if (LOG) cerr << "Updated Antenna model\n";
 
         User* user = UserModel::find_user_by_id(event.user_id);
         AntennaId likely_location;
         unsigned likely_end;
         assert(user);
-        cerr << "got user for event\n";
+        if (LOG) cerr << "got user for event\n";
         user->next_likely_location(event.hour, &likely_end,
             &likely_location);
-        cerr << "Got next likely location for user\n";
+        if (LOG) cerr << "Got next likely location for user\n";
         int duration = (int)likely_end - (int)event.hour;
         if (duration <= 0) duration += 24;
         Path predicted_path = AntennaModel::path_prediction(event.antenna_id,
             likely_location, duration);
-        cerr << "predicted a path\n";
+        if (LOG) cerr << "predicted a path\n";
         // Rerun with non-endpoint prediction
         // Path predicted_path_no_endpoint = antenna_model.path_prediction(
         //     event.antenna_id, event.hour);
         user->make_prediction(predicted_path, event.day, event.hour);
-        cerr << "Made a prediction\n";
+        if (LOG) cerr << "Made a prediction\n";
     }
-    cerr << "Done parsing events\n";
+    if (LOG) cerr << "Done parsing events\n";
 }
 
 int main(int argc, char** argv)
@@ -94,7 +94,7 @@ int main(int argc, char** argv)
     // Read in events and make predictions
     parse_events(event_file);
 
-    cerr << "Parsed events\n";
+    if (LOG) cerr << "Parsed events\n";
     event_file.close();
 
     // ofstream statistics_file;
