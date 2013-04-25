@@ -1,30 +1,45 @@
-#include <multiDimVala.h>
-#include <string>
-#include <boost\math\distributions\normal.hpp>
 #pragma once
+
+#include <string>
+#include <boost/math/distributions/normal.hpp>
+#include "globals.h"
+#include <algorithm>
+
+#include "multiDimVala.h"
+#include "types.h"
+#include "path.h"
+#include <vector>
+
 using namespace boost::math;
 
-#define EV_UID 0
-#define EV_YEAR 1
-#define EV_MONTH 2
-#define EV_DAY 3
-#define EV_HOUR 4
-#define EV_MINUTE 5
-#define EV_SECOND 6
-#define EV_ANTENNA 7
-#define EV_SIZE 8
+class User
+{
+    UserId id;
+    multiDimVala<float> smoothed;
+    bool smoothedUpToDate;
+    void smooth();
 
-class User {
-	vector<int> times;
-	vector<valarray<float>> original;
-	multiDimVala<float> smoothed;
-	bool smoothedUpToDate;
-	void smooth();
-public:
-	User(): smoothedUpToDate(false) {}
-	static multiDimVala<float>& antennas;
-	void addEvent(valarray<int> newEvent);
-	multiDimVala<float> getOriginal() {return multiDimVala<float>(original);}
-	multiDimVala<float> getSmoothed();
-	/*Event makePrediction();*/
+    vector<Event*> events;
+
+    public:
+        static void to_event(valarray<int> event_data, Event* event);
+        static string to_json(Event* event, bool is_prediction = true);
+
+        User(UserId id) : id(id), smoothedUpToDate(false) {};
+        ~User();
+
+        void add_event(Event* event);
+
+        UserId get_id() const { return id; };
+        vector<Event*> get_events() const { return events; };
+
+        void set_dirty() { smoothedUpToDate = false; };
+        bool is_dirty() const { return smoothedUpToDate != true; };
+
+        void next_likely_location(unsigned after_time, unsigned* out_time, AntennaId *out_ant);
+
+        multiDimVala<float> getSmoothed();
+        Event* get_last_event();
+
+        void make_prediction(Path& predicted_path, unsigned day, unsigned time);
 };
