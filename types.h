@@ -10,7 +10,7 @@ typedef struct event {
     int hour;
 } Event;
 
-enum EV { EV_UID = 1, EV_YEAR, EV_MONTH, EV_DAY, EV_HOUR, EV_MINUTE, EV_SECOND,
+enum EV { EV_UID = 0, EV_YEAR, EV_MONTH, EV_DAY, EV_HOUR, EV_MINUTE, EV_SECOND,
     EV_ANTENNA, EV_SIZE };
 
 // FIXME unsigned -> signed int

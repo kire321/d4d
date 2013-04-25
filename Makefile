@@ -25,15 +25,15 @@ main.o: user.h \
 
 # %.o: %.cpp %.h
 
-antenna.o: antenna.cpp antenna.h
+antenna.o: antenna.cpp antenna.h types.h multiDimVala.h
 	$(CC) -c $< -o $@ $(CFLAGS)
-user.o: user.cpp user.h antenna_model.h
+user.o: user.cpp user.h antenna_model.h types.h multiDimVala.h path.h
 	$(CC) -c $< -o $@ $(CFLAGS)
-antenna_model.o: antenna_model.cpp antenna_model.h utils.h user_model.h user.h
+antenna_model.o: antenna_model.cpp antenna_model.h utils.h user_model.h user.h antenna.h path.h types.h
 	$(CC) -c $< -o $@ $(CFLAGS)
-user_model.o: user_model.cpp user_model.h
+user_model.o: user_model.cpp user_model.h user.h types.h
 	$(CC) -c $< -o $@ $(CFLAGS)
-path.o: path.cpp path.h antenna.h antenna_model.h
+path.o: path.cpp path.h antenna.h antenna_model.h types.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 predictor.o: predictor.cpp types.h utils.h antenna_model.h user_model.h
 	$(CC) -c $< -o $@ $(CFLAGS)
