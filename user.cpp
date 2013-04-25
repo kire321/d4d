@@ -15,8 +15,6 @@
 using std::endl;
 using std::stringstream;
 
-multiDimVala<float> User::antennas = multiDimVala<float>();
-
 void User::to_event(valarray<int> event_data, Event* event)
 {
     event->user_id = event_data[EV_UID];
@@ -24,6 +22,7 @@ void User::to_event(valarray<int> event_data, Event* event)
     event->day = (event_data[EV_YEAR] - 2000) * 10000 +
         event_data[EV_MONTH] * 100 + EV_DAY; // Hack to get unique days
     event->hour = event_data[EV_HOUR];
+    event->minute = event_data[EV_MINUTE];
 }
 
 string User::to_json(Event* event, bool is_prediction)
@@ -46,10 +45,9 @@ string User::to_json(Event* event, bool is_prediction)
 
 User::~User()
 {
-    for (unsigned i = 0; i < events->size(); i++) {
-        free(events->at(i));
+    for (unsigned i = 0; i < events.size(); i++) {
+        free(events.at(i));
     }
-    delete events;
 }
 
 void User::add_event(Event* event)
@@ -61,28 +59,30 @@ void User::add_event(Event* event)
     new_event->antenna_id = event->antenna_id;
     new_event->day = event->day;
     new_event->hour = event->hour;
+    new_event->minute = event->minute;
 
-    events->push_back(new_event);
+    events.push_back(new_event);
     std::cout << to_json(new_event, false) << std::endl;
 
     set_dirty();
 }
 
-void User::addEvent(valarray<int> newEvent) {
-    // TODO: would it be easier to make it work with add_event i.e. using Event*, whichd
-    // packages date/time info for you?
-    Event event;
-    to_event(newEvent, &event);
-    add_event(&event);
-
-    //number of seconds is always zero
-    times.push_back(newEvent[EV_HOUR]*60+newEvent[EV_MINUTE]);
-    original.push_back(antennas.getCopy(0,newEvent[EV_ANTENNA]));
-    set_dirty();
-}
-
 void User::smooth() {
-    smoothedUpToDate=true;
+    // TODO: clean up this hack of recreating erik's data
+    vector<int> times;
+    vector<valarray<float> > original;
+    vector<Event*>::iterator event;
+    for (event = events.begin(); event != events.end(); event++) {
+        times.push_back((*event)->hour * 60 + (*event)->minute);
+        Antenna* antenna =
+            AntennaModel::find_antenna_by_id((*event)->antenna_id);
+        valarray<float> temp(2);
+        temp[0] = antenna->get_latitude();
+        temp[1] = antenna->get_longitude();
+        original.push_back(temp);
+    }
+
+    smoothedUpToDate = true;
     multiDimVala<float> vala(original);
     smoothed = multiDimVala<float>(original.size(),2);
     for (unsigned i=0; i<original.size(); ++i) {
@@ -104,7 +104,7 @@ multiDimVala<float> User::getSmoothed()
 
 Event* User::get_last_event()
 {
-    return events->back();
+    return events.back();
 }
 
 typedef pair<int,int> ii;
@@ -117,19 +117,26 @@ bool comparison(ii i, ii j) {
 // TODO: out_time is length or #?
 void User::next_likely_location(unsigned after_time, unsigned *out_time, AntennaId *out_ant)
 {
-	vector<ii> zipped;
-	for (unsigned i = 0; i < times.size(); ++i) {
-      zipped.push_back(ii(times[i],i));
-  }
-	sort(zipped.begin(), zipped.end(), comparison);
-	//The following slow search doesn't affect running time since we just did a sort which is slower
-	unsigned i = 0;
-	for (; i<zipped.size(); ++i) {
-      if (zipped[i].first > (int)after_time) break;
-  }
-	*out_time=zipped[i].first;
-	valarray<float> latLon=getSmoothed().getCopy(0,zipped[i].second);
-	*out_ant=AntennaModel::find_nearest_antenna(latLon[0],latLon[1])->get_id();
+    vector<ii> zipped;
+    for (unsigned i = 0; i < events.size(); ++i) {
+        int event_minute = events[i]->hour * 60 + events[i]->minute;
+        zipped.push_back(ii(event_minute,i));
+    }
+    sort(zipped.begin(), zipped.end(), comparison);
+    std::cout << "Sorted locations\n";
+    //The following slow search doesn't affect running time since we just did a sort which is slower
+    unsigned i = 0;
+    for (; i < zipped.size(); i++) {
+        if (zipped[i].first > (int)after_time*60) break;
+    }
+    if (i == zipped.size()) i = 0;
+    cout << out_time << endl;
+    ii pair1 = zipped[i];
+    cout << "hello";
+    *out_time = (pair1.first + 30)/60;
+    cout << out_ant << endl;
+    valarray<float> latLon=getSmoothed().getCopy(0,zipped[i].second);
+    *out_ant=AntennaModel::find_nearest_antenna(latLon[0],latLon[1])->get_id();
 }
 
 void User::make_prediction(Path& predicted_path, unsigned day, unsigned hour)

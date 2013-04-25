@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "path.h"
 #include "antenna_model.h"
 #include "antenna.h"
@@ -8,10 +10,14 @@ Path Path::interpolate_path(AntennaId start, AntennaId end,
     Antenna* start_antenna = AntennaModel::find_antenna_by_id(start);
     Antenna* end_antenna = AntennaModel::find_antenna_by_id(end);
 
-    float start_lat = start_antenna->lat();
-    float start_lon = start_antenna->lon();
-    float lat_diff = end_antenna->lat() - start_antenna->lat();
-    float lon_diff = end_antenna->lon() - start_antenna->lon();
+    assert(start_antenna && end_antenna);
+
+    float start_lat = start_antenna->get_latitude();
+    float start_lon = start_antenna->get_longitude();
+    float lat_diff = end_antenna->get_latitude() -
+        start_antenna->get_latitude();
+    float lon_diff = end_antenna->get_longitude() -
+        start_antenna->get_longitude();
 
     Path interpolated_path;
     interpolated_path.add_step(start);

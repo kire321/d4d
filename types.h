@@ -8,6 +8,7 @@ typedef struct event {
     AntennaId antenna_id;
     int day;
     int hour;
+    int minute;
 } Event;
 
 enum EV { EV_UID = 0, EV_YEAR, EV_MONTH, EV_DAY, EV_HOUR, EV_MINUTE, EV_SECOND,

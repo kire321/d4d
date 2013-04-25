@@ -18,8 +18,9 @@ void AntennaModel::init(ifstream& file)
     string line;
     while (file.good()) {
         getline(file, line);
+        // std::cout << line << std::endl;
         try {
-            valarray<float> antenna_data = splitConvert<float>(line, "\t")[slice(1,2,1)];
+            valarray<float> antenna_data = splitConvert<float>(line, "\t");
             add_antenna(antenna_data);
         } catch (...) {
             cout << "Failed to parse a line in antenna file. Continuing." << endl;
@@ -34,6 +35,7 @@ bool AntennaModel::add_antenna(valarray<float> antenna_data)
     float lat = antenna_data[1];
     float lon = antenna_data[2];
 
+    // cout << "Adding antenna: " << id << endl;
     if (!find_antenna_by_id(id)) {
         antennas[id] = new Antenna(lat, lon, id);
         return true;
@@ -52,9 +54,11 @@ void AntennaModel::update(Event* event)
     AntennaId origin_antenna_id = last_event->antenna_id;
     unsigned elapsed_time = hour - last_event->hour;
     if (elapsed_time < 0) elapsed_time += 24;
+    std::cout << "Found last user event. Interpolating path\n";
 
     Path interpolated_path = Path::interpolate_path(origin_antenna_id,
         antenna_id, hour);
+    std::cout << "Interpolated path\n";
 
     // Increment next-step transition frequency for the i,j path on t time units
     AntennaId current_antenna, next_antenna;
@@ -73,6 +77,7 @@ void AntennaModel::update(Event* event)
 
 Antenna* AntennaModel::find_antenna_by_id(AntennaId id)
 {
+    // cout << "Finding id: " << id << endl;
     if (antennas.find(id) != antennas.end()) {
         return antennas[id];
     } else {
