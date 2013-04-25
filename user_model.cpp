@@ -1,16 +1,15 @@
 #include "user_model.h"
 
-map<UserId, User*>* UserModel::users = NULL;
+map<UserId, User*> UserModel::users = map<UserId, User*>();
 
 void UserModel::init()
 {
-    users = new map<UserId, User*>();
 }
 
 bool UserModel::add_user(UserId id)
 {
     if (!find_user_by_id(id)) {
-        users->at(id) = new User(id);
+        users[id] = new User(id);
         return true;
     }
     return false;
@@ -26,5 +25,9 @@ void UserModel::update(Event* event)
 
 User* UserModel::find_user_by_id(UserId id)
 {
-    return users->at(id);
+    if (users.find(id) != users.end()) {
+        return users[id];
+    } else {
+        return NULL;
+    }
 }

@@ -1,6 +1,7 @@
 #include <cstdlib> // TODO: remove me
 #include <assert.h>
 #include <iostream>
+#include <sstream>
 
 // #include <boost/property_tree/ptree.hpp>
 // #include <boost/property_tree/json_parser.hpp>
@@ -10,6 +11,9 @@
 
 #include "user.h"
 #include "antenna_model.h"
+
+using std::endl;
+using std::stringstream;
 
 multiDimVala<float> User::antennas = multiDimVala<float>();
 
@@ -24,19 +28,20 @@ void User::to_event(valarray<int> event_data, Event* event)
 
 string User::to_json(Event* event, bool is_prediction)
 {
-    string json("{\n");
-    json.append("\t\"uid\" : %d\n", event->user_id);
-    json.append("\t\"time\" :\n");
-    json.append("\t{\n");
-    json.append("\t\t\"day\" : %d\n", event->day);
-    json.append("\t\t\"hour\" : %d\n", event->hour);
-    json.append("\t}\n");
-    json.append("\t\"antenna\" : %d\n", event->antenna_id);
-    json.append("\t\"is_prediction\" : %s\n",
-        (is_prediction ? "true" : "false"));
-    json.append("}");
+    stringstream json;
+    json << "{" << endl;
+    json << "\t\"uid\" : " << event->user_id << endl;
+    json << "\t\"time\" :" << endl;
+    json << "\t{" << endl;
+    json << "\t\t\"day\" : " << event->day << endl;
+    json << "\t\t\"hour\" : " << event->hour << endl;
+    json << "\t}" << endl;
+    json << "\t\"antenna\" : " << event->antenna_id << endl;
+    json << "\t\"is_prediction\" : " << (is_prediction ? "true" : "false")
+        << endl;
+    json << "}";
 
-    return json;
+    return json.str();
 }
 
 User::~User()

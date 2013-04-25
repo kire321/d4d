@@ -6,13 +6,12 @@
 #include "user_model.h"
 #include "user.h"
 
-vector<Antenna*> AntennaModel::antennas = vector<Antenna*>();
 map<AntennaId, map<AntennaId, map<unsigned, map<AntennaId,
     unsigned> > > > AntennaModel::transition_frequencies =
     map<AntennaId, map<AntennaId, map<unsigned, map<AntennaId,
     unsigned> > > >();
-map<AntennaId, unsigned> AntennaModel::antenna_id_map =
-    map<AntennaId, unsigned>();
+map<AntennaId, Antenna*> AntennaModel::antennas =
+    map<AntennaId, Antenna*>();
 
 void AntennaModel::init(ifstream& file)
 {
@@ -22,13 +21,11 @@ void AntennaModel::init(ifstream& file)
         try {
             valarray<float> antenna_data = splitConvert<float>(line, "\t")[slice(1,2,1)];
             add_antenna(antenna_data);
-        }
-        catch (...) {
+        } catch (...) {
             cout << "Failed to parse a line in antenna file. Continuing." << endl;
         }
-        std::cout << "Added antenna\n";
+        // std::cout << "Added antenna\n";
     }
-
 }
 
 bool AntennaModel::add_antenna(valarray<float> antenna_data)
@@ -38,11 +35,7 @@ bool AntennaModel::add_antenna(valarray<float> antenna_data)
     float lon = antenna_data[2];
 
     if (!find_antenna_by_id(id)) {
-        antennas.push_back(new Antenna(lat, lon, id));
-        antenna_id_map[id] = antennas.size() - 1;
-        // if (id >= transition_frequencies->size()) {
-        //     transition_frequencies->resize(2 * transition_frequencies->size());
-        // }
+        antennas[id] = new Antenna(lat, lon, id);
         return true;
     }
     return false;
@@ -80,18 +73,23 @@ void AntennaModel::update(Event* event)
 
 Antenna* AntennaModel::find_antenna_by_id(AntennaId id)
 {
-    return antennas.at(antenna_id_map[id]);
+    if (antennas.find(id) != antennas.end()) {
+        return antennas[id];
+    } else {
+        return NULL;
+    }
 }
 
 Antenna* AntennaModel::find_nearest_antenna(float lat, float lon)
 {
     // TODO: make more efficient
-    Antenna* nearest = *(antennas.begin());
-    vector<Antenna*>::iterator ant;
-    for (ant = antennas.begin() + 1; ant != antennas.end(); ant++) {
-        if ((*ant)->distance_from(lat, lon) <
+    Antenna* nearest = antennas.begin()->second;
+    map<AntennaId, Antenna*>::iterator ant;
+    for (ant = antennas.begin(); ant != antennas.end(); ant++) {
+        Antenna* antenna = ant->second;
+        if (antenna->distance_from(lat, lon) <
             nearest->distance_from(lat, lon)) {
-            nearest = *ant;
+            nearest = antenna;
         }
     }
     return nearest;

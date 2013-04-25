@@ -10,7 +10,7 @@ using std::map;
 class UserModel
 {
     public:
-        static map<UserId, User*>* users;
+        static map<UserId, User*> users;
 
         static void init();
         static bool add_user(UserId id);
