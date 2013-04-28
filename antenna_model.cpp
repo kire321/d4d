@@ -63,8 +63,7 @@ void AntennaModel::update(Event* event)
     // Increment next-step transition frequency for the i,j path on t time units
     AntennaId current_antenna, next_antenna;
     current_antenna = interpolated_path.get_next_step(true);
-    while ((next_antenna = interpolated_path.get_next_step()) !=
-        interpolated_path.get_last_step()) {
+    while ((next_antenna = interpolated_path.get_next_step()) != -1) {
         map<AntennaId, unsigned> ij_paths_of_correct_length =
             transition_frequencies[current_antenna][interpolated_path.get_last_step()][elapsed_time--];
         if (ij_paths_of_correct_length.find(interpolated_path.get_first_step()) ==
