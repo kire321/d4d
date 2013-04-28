@@ -2,7 +2,6 @@
 
 #include <string>
 #include <boost/math/distributions/normal.hpp>
-#include "globals.h"
 #include <algorithm>
 
 #include "multiDimVala.h"
