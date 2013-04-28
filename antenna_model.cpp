@@ -103,7 +103,6 @@ Path AntennaModel::path_prediction(AntennaId start, AntennaId end,
     unsigned time)
 {
     Path predicted_path;
-    predicted_path.add_step(start);
 
     for (; time > 1; time--) {
         predicted_path.add_step(next_step_prediction(
@@ -117,7 +116,6 @@ Path AntennaModel::path_prediction(AntennaId start, AntennaId end,
 Path AntennaModel::path_prediction(AntennaId start, unsigned time)
 {
     Path predicted_path;
-    predicted_path.add_step(start);
 
     for (; time > 0; time--) {
         predicted_path.add_step(next_step_prediction(
