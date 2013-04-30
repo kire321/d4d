@@ -10,7 +10,7 @@ analysis: main.o \
 		$(CC) $(CFLAGS) -o $@ $^
 
 run:
-	./predictor ~/Documents/AIT-Budapest/Data\ Mining/project/data/ANT_POS.TSV ~/Documents/AIT-Budapest/Data\ Mining/project/data/events/sorted0.TSV
+	./predictor ../data/ANT_POS.TSV ../data/events/sorted0.TSV > ../output/output.json 2> ../output/err.txt
 
 predictor: predictor.o \
 	antenna.o \

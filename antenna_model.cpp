@@ -63,17 +63,18 @@ void AntennaModel::update(Event* event)
     // Increment next-step transition frequency for the i,j path on t time units
     AntennaId current_antenna, next_antenna;
     current_antenna = interpolated_path.get_next_step(true);
-    do {
-      // FIXME: never advancing current antenna
+    while ((next_antenna = interpolated_path.get_next_step()) != -1) {
         map<AntennaId, unsigned> ij_paths_of_correct_length =
             transition_frequencies[current_antenna][interpolated_path.get_last_step()][elapsed_time--];
-        if (ij_paths_of_correct_length.find(interpolated_path.get_first_step()) ==
+        if (ij_paths_of_correct_length.find(next_antenna) ==
             ij_paths_of_correct_length.end()) {
-            // FIXME: NULL out everytihng ?
-            ij_paths_of_correct_length[interpolated_path.get_first_step()] = 1; // Everything starts at 1 to avoid empty distribution
+            // TODO: NULL out everytihng ?
+            ij_paths_of_correct_length[next_antenna] = 1; // Everything starts at 1 to avoid empty distribution
         }
-        ij_paths_of_correct_length[interpolated_path.get_first_step()]++;
-    } while ((next_antenna = interpolated_path.get_next_step()) != -1);
+        ij_paths_of_correct_length[next_antenna]++;
+
+        current_antenna = next_antenna;
+    }
 }
 
 Antenna* AntennaModel::find_antenna_by_id(AntennaId id)
@@ -131,7 +132,7 @@ Path AntennaModel::path_prediction(AntennaId start, unsigned time)
 AntennaId AntennaModel::next_step_prediction(AntennaId start, AntennaId end, unsigned time)
 {
     if (LOG) std::cerr << "making next step pred\n";
-    std::default_random_engine generator;
+    static std::default_random_engine generator;
 
     if (LOG) std::cerr << "Start: " << start << " end: " << end << " time: " << std::endl;
     unsigned num_antennas = antennas.size();
@@ -147,12 +148,14 @@ AntennaId AntennaModel::next_step_prediction(AntennaId start, AntennaId end, uns
     std::discrete_distribution<int> distribution(frequencies.begin(),
         frequencies.end());
 
-    return distribution(generator);
+    AntennaId result = distribution(generator);
+    return result;
+    // return distribution(generator);
 }
 
 AntennaId AntennaModel::next_step_prediction(AntennaId current, unsigned time)
 {
-    std::default_random_engine generator;
+    static std::default_random_engine generator;
 
     unsigned num_antennas = antennas.size();
     vector<unsigned> frequencies(num_antennas);

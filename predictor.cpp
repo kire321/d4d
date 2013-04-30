@@ -58,7 +58,7 @@ void parse_events(ifstream& file)
         // Rerun with non-endpoint prediction
         // Path predicted_path_no_endpoint = antenna_model.path_prediction(
         //     event.antenna_id, event.hour);
-        user->make_prediction(predicted_path, event.day, event.hour);
+        user->make_prediction(predicted_path, event.day, event.hour + 1);
         if (LOG) cerr << "Made a prediction\n";
     }
     if (LOG) cerr << "Done parsing events\n";
