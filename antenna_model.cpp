@@ -102,6 +102,7 @@ Antenna* AntennaModel::find_nearest_antenna(float lat, float lon)
 Path AntennaModel::path_prediction(AntennaId start, AntennaId end,
     unsigned time)
 {
+    if (LOG) std::cerr << "In path prediction\n";
     Path predicted_path;
 
     for (; time > 1; time--) {
@@ -129,8 +130,10 @@ AntennaId AntennaModel::next_step_prediction(AntennaId start, AntennaId end, uns
 {
     std::default_random_engine generator;
 
+    if (LOG) std::cerr << "In next step prediction\n";
     vector<unsigned> frequencies(&transition_frequencies[start][end][time][0],
         &transition_frequencies[start][end][time][antennas.size()]);
+    if (LOG) std::cerr << "Got a vector\n";
     std::discrete_distribution<int> distribution(frequencies.begin(),
         frequencies.end());
 

@@ -13,6 +13,8 @@
 
 using namespace std;
 
+int num_events = 0;
+
 int read_event(Event* event, ifstream& file)
 {
     string line;
@@ -39,32 +41,9 @@ void parse_events(ifstream& file)
     Event event;
     while (file.good()) {
         if (read_event(&event, file) < 0) continue;
-        if (LOG) cerr << "Read event\n";
         UserModel::update(&event);
-        if (LOG) cerr << "Updated user model\n";
-        AntennaModel::update(&event);
-        if (LOG) cerr << "Updated Antenna model\n";
-
-        User* user = UserModel::find_user_by_id(event.user_id);
-        AntennaId likely_location;
-        unsigned likely_end;
-        assert(user);
-        if (LOG) cerr << "got user for event\n";
-        user->next_likely_location(event.hour, &likely_end,
-            &likely_location);
-        if (LOG) cerr << "Got next likely location for user\n";
-        int duration = (int)likely_end - (int)event.hour;
-        if (duration <= 0) duration += 24;
-        Path predicted_path = AntennaModel::path_prediction(event.antenna_id,
-            likely_location, duration);
-        if (LOG) cerr << "predicted a path\n";
-        // Rerun with non-endpoint prediction
-        // Path predicted_path_no_endpoint = antenna_model.path_prediction(
-        //     event.antenna_id, event.hour);
-        user->make_prediction(predicted_path, event.day, event.hour);
-        if (LOG) cerr << "Made a prediction\n";
+        num_events++;
     }
-    if (LOG) cerr << "Done parsing events\n";
 }
 
 int main(int argc, char** argv)
@@ -100,14 +79,27 @@ int main(int argc, char** argv)
     if (LOG) cerr << "Parsed events\n";
     event_file.close();
 
-    // ofstream statistics_file;
-    // try {
-    //     statistics_file.open("stats.txt", ios_base::out);
-    // } catch (...) {
-    //     cerr << "Could not open stats file for writing.\n";
-    // }
-    // g_antenna_model.print_statistics(statistics_file);
-    // g_user_model.print_statistics(statistics_file);
+    // Compute changed under smoothing
+    int num_changed = 0;
+    map<UserId, User*>::iterator user;
+    for (user = UserModel::users.begin(); user != UserModel::users.end();
+        user++) {
+        multiDimVala<float> smoothed = (user->second)->getSmoothed();
+        vector<Event*> events = (user->second)->get_events();
+
+        for (int j = 0; j < smoothed.shape[0]; j++) {
+            valarray<float> smoothed_loc = smoothed.getView(0, j);
+            Antenna* nearest = AntennaModel::find_nearest_antenna(smoothed_loc[0],
+                smoothed_loc[1]);
+            if (nearest->get_id() != events[j]->antenna_id) {
+                num_changed++;
+            }
+        }
+
+    }
+
+    cout << num_changed << " out of " << num_events << " were changed." << endl;
+    cout << float(num_changed)/float(num_events) << " were changed." << endl;
 
     return EXIT_SUCCESS;
 }

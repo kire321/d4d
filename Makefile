@@ -1,16 +1,21 @@
 CC=g++
 CFLAGS=-g -Wall -O3 -std=c++0x
 
-default: predictor
-	#	analysis
+default: predictor smoother
 
-analysis: main.o \
+smoother: smoother.o \
+	antenna.o \
 	user.o \
-	antenna.o
+	antenna_model.o \
+	user_model.o \
+	path.o
 		$(CC) $(CFLAGS) -o $@ $^
 
+run_smoother:
+	./smoother ~/Documents/AIT-Budapest/Data\ Mining/project/data/ANT_POS.TSV ~/Documents/AIT-Budapest/Data\ Mining/project/data/events/sorted0.TSV
+
 run:
-	./predictor ~/Documents/AIT-Budapest/Data\ Mining/project/data/ANT_POS.TSV ~/Documents/AIT-Budapest/Data\ Mining/project/data/events/POS_SAMPLE_0.TSV
+	./predictor ~/Documents/AIT-Budapest/Data\ Mining/project/data/ANT_POS.TSV ~/Documents/AIT-Budapest/Data\ Mining/project/data/events/sorted0.TSV
 
 predictor: predictor.o \
 	antenna.o \
@@ -36,6 +41,9 @@ user_model.o: user_model.cpp user_model.h user.h types.h
 path.o: path.cpp path.h antenna.h antenna_model.h types.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 predictor.o: predictor.cpp types.h utils.h antenna_model.h user_model.h
+	$(CC) -c $< -o $@ $(CFLAGS)
+
+smoother.o: smoother.cpp types.h utils.h antenna_model.h user_model.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 clean:
