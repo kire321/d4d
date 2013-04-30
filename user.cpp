@@ -34,7 +34,7 @@ string User::to_json(Event* event, bool is_prediction)
     json << "\t{" << endl;
     json << "\t\t\"day\" : " << event->day << "," << endl;
     json << "\t\t\"hour\" : " << event->hour << endl;
-    json << "\t}" << endl;
+    json << "\t}," << endl;
     json << "\t\"antenna\" : " << event->antenna_id << "," << endl;
     json << "\t\"is_prediction\" : " << (is_prediction ? "true" : "false")
         << endl;
