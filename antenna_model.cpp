@@ -63,15 +63,17 @@ void AntennaModel::update(Event* event)
     // Increment next-step transition frequency for the i,j path on t time units
     AntennaId current_antenna, next_antenna;
     current_antenna = interpolated_path.get_next_step(true);
-    while ((next_antenna = interpolated_path.get_next_step()) != -1) {
+    do {
+      // FIXME: never advancing current antenna
         map<AntennaId, unsigned> ij_paths_of_correct_length =
             transition_frequencies[current_antenna][interpolated_path.get_last_step()][elapsed_time--];
         if (ij_paths_of_correct_length.find(interpolated_path.get_first_step()) ==
             ij_paths_of_correct_length.end()) {
-            ij_paths_of_correct_length[interpolated_path.get_first_step()] = 0;
+            // FIXME: NULL out everytihng ?
+            ij_paths_of_correct_length[interpolated_path.get_first_step()] = 1; // Everything starts at 1 to avoid empty distribution
         }
         ij_paths_of_correct_length[interpolated_path.get_first_step()]++;
-    }
+    } while ((next_antenna = interpolated_path.get_next_step()) != -1);
 }
 
 Antenna* AntennaModel::find_antenna_by_id(AntennaId id)
@@ -102,6 +104,7 @@ Antenna* AntennaModel::find_nearest_antenna(float lat, float lon)
 Path AntennaModel::path_prediction(AntennaId start, AntennaId end,
     unsigned time)
 {
+    if (LOG) std::cerr << "making path prediction\n";
     Path predicted_path;
 
     for (; time > 1; time--) {
@@ -127,10 +130,20 @@ Path AntennaModel::path_prediction(AntennaId start, unsigned time)
 
 AntennaId AntennaModel::next_step_prediction(AntennaId start, AntennaId end, unsigned time)
 {
+    if (LOG) std::cerr << "making next step pred\n";
     std::default_random_engine generator;
 
-    vector<unsigned> frequencies(&transition_frequencies[start][end][time][0],
-        &transition_frequencies[start][end][time][antennas.size()]);
+    if (LOG) std::cerr << "Start: " << start << " end: " << end << " time: " << std::endl;
+    unsigned num_antennas = antennas.size();
+    vector<unsigned> frequencies(num_antennas, 1); // Initialize to 1 to avoid empty distribution
+    for (unsigned i = 0; i < num_antennas; i++) {
+        map <AntennaId, unsigned> tfs = transition_frequencies[start][end][time];
+        if (tfs.find(i) != tfs.end()) {
+            frequencies[i] = tfs[i];
+        }
+    }
+    if (LOG) std::cerr << "allocated successfuly\n";
+
     std::discrete_distribution<int> distribution(frequencies.begin(),
         frequencies.end());
 
@@ -143,18 +156,18 @@ AntennaId AntennaModel::next_step_prediction(AntennaId current, unsigned time)
 
     unsigned num_antennas = antennas.size();
     vector<unsigned> frequencies(num_antennas);
-    for (unsigned i = 0; i < num_antennas; i++) {
-        unsigned num_paths = 0;
-        for (unsigned j = 0; j < num_antennas; j++) {
-            for(unsigned k = 0; k < 24; k++) {
-                num_paths += transition_frequencies[current][j][k][i]; // TODO: slow as heck
-            }
-        }
-        frequencies[i] = num_paths;
-    }
-    // FIXME: will choke if distribution is all 0s
+    // for (unsigned i = 0; i < num_antennas; i++) {
+    //     unsigned num_paths = 0;
+    //     for (unsigned j = 0; j < num_antennas; j++) {
+    //         for(unsigned k = 0; k < 24; k++) {
+    //             num_paths += transition_frequencies[current][j][k][i]; // TODO: slow as heck
+    //             //FIXME: broken?/inefficient
+    //         }
+    //     }
+    //     frequencies[i] = num_paths;
+    // }
     std::discrete_distribution<int> distribution(frequencies.begin(),
-        frequencies.end());
+         frequencies.end());
 
     return distribution(generator);
 }

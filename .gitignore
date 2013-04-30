@@ -1,3 +1,5 @@
 antenna
 predictor
 *.o
+*.txt
+*.json
