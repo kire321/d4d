@@ -13,6 +13,8 @@ class UserModel
         static map<UserId, User*> users;
 
         static void init();
+        static void clear(); // Use to destroy records of users
+
         static bool add_user(UserId id);
         static void update(Event* event);
         static User* find_user_by_id(UserId id);

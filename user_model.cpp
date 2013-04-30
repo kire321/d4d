@@ -6,6 +6,11 @@ void UserModel::init()
 {
 }
 
+void UserModel::clear()
+{
+    users.clear();
+}
+
 bool UserModel::add_user(UserId id)
 {
     if (!find_user_by_id(id)) {
