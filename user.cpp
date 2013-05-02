@@ -126,7 +126,7 @@ void User::next_likely_location(unsigned after_time, unsigned *out_time, Antenna
     //The following slow search doesn't affect running time since we just did a sort which is slower
     unsigned i = 0;
     for (; i < zipped.size(); i++) {
-        if (zipped[i].first > (int)after_time*60) break;
+        if (zipped[i].first > (int)(after_time+1)*60) break;
     }
     if (i == zipped.size()) i = 0;
     ii pair1 = zipped[i];
