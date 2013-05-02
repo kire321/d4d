@@ -20,7 +20,7 @@ void User::to_event(valarray<int> event_data, Event* event)
     event->user_id = event_data[EV_UID];
     event->antenna_id = event_data[EV_ANTENNA];
     event->day = (event_data[EV_YEAR] - 2000) * 10000 +
-        event_data[EV_MONTH] * 100 + EV_DAY; // Hack to get unique days
+        event_data[EV_MONTH] * 100 + event_data[EV_DAY]; // Hack to get unique days
     event->hour = event_data[EV_HOUR];
     event->minute = event_data[EV_MINUTE];
 }
