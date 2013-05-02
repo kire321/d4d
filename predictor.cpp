@@ -57,18 +57,18 @@ void parse_events(istream& file)
         unsigned likely_end;
         assert(user);
         if (LOG) cerr << "got user for event\n";
-        // user->next_likely_location(event.hour, &likely_end,
-        //    &likely_location);
+        user->next_likely_location(event.hour, &likely_end,
+            &likely_location);
         if (LOG) cerr << "Got next likely location for user\n";
         int duration = (int)likely_end - (int)event.hour;
         if (duration <= 0) duration += 24;
-        // Path predicted_path = AntennaModel::path_prediction(event.antenna_id,
-        //     likely_location, duration);
+        Path predicted_path = AntennaModel::path_prediction(event.antenna_id,
+            likely_location, duration);
         if (LOG) cerr << "predicted a path\n";
         // Rerun with non-endpoint prediction
         // Path predicted_path_no_endpoint = antenna_model.path_prediction(
         //     event.antenna_id, event.hour);
-        // user->make_prediction(predicted_path, event.day, event.hour + 1);
+        user->make_prediction(predicted_path, event.day, event.hour + 1);
         if (LOG) cerr << "Made a prediction\n";
     }
     if (LOG) cerr << "Done parsing events\n";
