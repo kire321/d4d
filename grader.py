@@ -33,13 +33,15 @@ def objFromDict(mapping):
             setattr(toret,key,val)
     return toret
 
-def report(count,total):
+def report(name, count, total):
     #import rpdb2; rpdb2.start_embedded_debugger('asdf')
+    print "\n" + name
     frac=sorted([(day,float(count.get(day,0))/total[day]) for day in total.keys()])
     sys.stdout.writelines([str(line) for line in frac])
     print
     plt.plot([frac[i][0] for i in range(len(frac))],[frac[i][1] for i in range(len(frac))])
-    plt.show()
+    plt.savefig(name+".pdf")
+    plt.clf()
 
 def main():
     predictions={}
@@ -49,7 +51,7 @@ def main():
     total={}
     lines=[]
     antennas=np.loadtxt("ANT_POS.TSV",usecols=(1,2))
-    RMSD={}
+    dist={}
     while True:
         line=sys.stdin.readline()
         if line=="":
@@ -66,14 +68,11 @@ def main():
                     errors[event.time.day] = errors.get(event.time.day, 0) + int(event.antenna != predictions[key])
                     totalForError[event.time.day]=totalForError.get(event.time.day,0)+1
                     coverage[event.time.day]=coverage.get(event.time.day,0)+1
-                    RMSD[event.time.day]=RMSD.get(event.time.day,0)+sum((antennas[event.antenna-1]-antennas[predictions[key]-1])**2)**.5
+                    dist[event.time.day]=dist.get(event.time.day,0)+sum((antennas[event.antenna-1]-antennas[predictions[key]-1])**2)**.5
             lines=[]
-    print "Errors"
-    report(errors,totalForError)
-    print "\nCoverage"
-    report(coverage,total)
-    print "\nRMSD"
-    report(RMSD,totalForError)
+    report("Errors", errors, totalForError)
+    report("Coverage", coverage,total)
+    report("Dist", dist,totalForError)
 
 
 main()
