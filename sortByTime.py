@@ -18,6 +18,10 @@ def parseUid(line):
     uid,date,time,aid=line.split()
     return int(uid)
 
+
+if args.maxUsers == None:
+    args.maxUsers = sys.maxint
+#import rpdb2; rpdb2.start_embedded_debugger("asdf")
 lines=filter(lambda line: parseUid(line)<=args.maxUsers, sys.stdin.readlines())
 lines.sort(key=parseDt)
 sys.stdout.writelines(lines)
