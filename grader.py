@@ -1,4 +1,5 @@
-#usage: pipe in predictions, ANT_POS.TSV must be in the same directory
+#usage: python grader.py thisGoesInFileNames < stuffToBeGraded.json
+#usage: pipe in predictions, ANT_POS.TSV must be in the same directory, argument goes before extension in file names.
 import sys
 import json
 import matplotlib.pyplot as plt
@@ -40,7 +41,7 @@ def report(name, count, total):
     sys.stdout.writelines([str(line) for line in frac])
     print
     plt.plot([frac[i][0] for i in range(len(frac))],[frac[i][1] for i in range(len(frac))])
-    plt.savefig(name+".pdf")
+    plt.savefig(name + sys.argv[1] + ".pdf")
     plt.clf()
 
 def main():
@@ -52,6 +53,7 @@ def main():
     lines=[]
     antennas=np.loadtxt("ANT_POS.TSV",usecols=(1,2))
     dist={}
+    lastDay=-1
     while True:
         line=sys.stdin.readline()
         if line=="":
@@ -63,6 +65,9 @@ def main():
             if event.is_prediction:
                 predictions[key]=event.antenna
             else:
+                if event.time.day > lastDay:
+                    sys.stderr.write("Now processing day "+str(event.time.day)+"\n")
+                    lastDay=event.time.day
                 total[event.time.day]=total.get(event.time.day,0)+1
                 if key in predictions:
                     errors[event.time.day] = errors.get(event.time.day, 0) + int(event.antenna != predictions[key])
