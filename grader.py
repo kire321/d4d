@@ -2,7 +2,7 @@
 #usage: pipe in predictions, ANT_POS.TSV must be in the same directory, argument goes before extension in file names.
 import sys
 import json
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy as np
 
 class fakeFile:
@@ -40,9 +40,9 @@ def report(name, count, total):
     frac=sorted([(day,float(count.get(day,0))/total[day]) for day in total.keys()])
     sys.stdout.writelines([str(line) for line in frac])
     print
-    plt.plot([frac[i][0] for i in range(len(frac))],[frac[i][1] for i in range(len(frac))])
-    plt.savefig(name + sys.argv[1] + ".pdf")
-    plt.clf()
+    #plt.plot([frac[i][0] for i in range(len(frac))],[frac[i][1] for i in range(len(frac))])
+    #plt.savefig(name + sys.argv[1] + ".pdf")
+    #plt.clf()
 
 def main():
     predictions={}
@@ -58,6 +58,8 @@ def main():
         line=sys.stdin.readline()
         if line=="":
             break
+        if "Failed" in line:
+            continue
         lines.append(line)
         if line=="}\n":
             event=objFromDict(json.load(fakeFile(lines)))
