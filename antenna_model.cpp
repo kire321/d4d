@@ -1,4 +1,3 @@
-#include <random>
 #include <iostream>
 
 #include "antenna_model.h"

@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-g -Wall -O3 -std=c++0x
+CFLAGS=-g -Wall -O3
 
 default: predictor
 	#	analysis

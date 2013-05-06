@@ -91,6 +91,8 @@ int main(int argc, char** argv)
 
     UserModel::init();
 
+    srand(time(NULL));
+
     // Read in events and make predictions
     parse_events(cin);
     if (LOG) cerr << "Parsed events\n";
