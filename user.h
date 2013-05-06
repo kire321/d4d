@@ -17,6 +17,7 @@ class User
     multiDimVala<float> smoothed;
     bool smoothedUpToDate;
     void smooth();
+    vector<Event*> predictions;
 
     vector<Event*> events;
 

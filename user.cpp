@@ -12,6 +12,7 @@
 #include "user.h"
 #include "antenna_model.h"
 
+using std::cout;
 using std::endl;
 using std::stringstream;
 
@@ -61,8 +62,27 @@ void User::add_event(Event* event)
     new_event->hour = event->hour;
     new_event->minute = event->minute;
 
+    // To use for comparison below
+    unsigned new_event_time = new_event->day * 10000 + new_event->hour * 100 +
+        new_event->minute;
+
     events.push_back(new_event);
-    std::cout << to_json(new_event, false) << std::endl;
+    cout << to_json(new_event, false) << endl;
+
+    // See if we had a prediction for it; either way, delete all predictions
+    // preceeding the event
+    vector<Event*>::iterator pr = predictions.begin();
+    while (pr != predictions.end()) {
+        unsigned prediction_time = (*pr)->day * 10000 + (*pr)->hour * 100 +
+            (*pr)->minute;
+        if (prediction_time == new_event_time) {
+            cout << to_json((*pr), true) << endl;
+        } else if (prediction_time > new_event_time) {
+            break;
+        }
+        pr++;
+    }
+    predictions.erase(predictions.begin(), pr);
 
     set_dirty();
 }
@@ -148,7 +168,7 @@ void User::make_prediction(Path& predicted_path, unsigned day, unsigned hour)
         }
         new_predicted_event->hour = hour++;
         new_predicted_event->day = day;
-        std::cout << to_json(new_predicted_event, true) << std::endl;
+        predictions.push_back(new_predicted_event);
 
         predicted_antenna = predicted_path.get_next_step();
     }
