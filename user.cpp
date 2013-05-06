@@ -102,7 +102,8 @@ void User::smooth() {
         original.push_back(temp);
     }
 
-    smoothedUpToDate = true;
+    num_unsmoothed_events = 0;
+
     multiDimVala<float> vala(original);
     smoothed = multiDimVala<float>(original.size(),2);
     for (unsigned i=0; i<original.size(); ++i) {

@@ -15,17 +15,17 @@ class User
 {
     UserId id;
     multiDimVala<float> smoothed;
-    bool smoothedUpToDate;
     void smooth();
     vector<Event*> predictions;
 
     vector<Event*> events;
+    unsigned num_unsmoothed_events; // Only smooth once we have 10 new events
 
     public:
         static void to_event(valarray<int> event_data, Event* event);
         static string to_json(Event* event, bool is_prediction = true);
 
-        User(UserId id) : id(id), smoothedUpToDate(false) {};
+        User(UserId id) : id(id), num_unsmoothed_events(0) {};
         ~User();
 
         void add_event(Event* event);
@@ -33,8 +33,9 @@ class User
         UserId get_id() const { return id; };
         vector<Event*> get_events() const { return events; };
 
-        void set_dirty() { smoothedUpToDate = false; };
-        bool is_dirty() const { return smoothedUpToDate != true; };
+        void set_dirty() { num_unsmoothed_events++; };
+        // TODO: make a constant so we can tweak the 'dirty' threshold
+        bool is_dirty() const { return num_unsmoothed_events >= 10; };
 
         void next_likely_location(unsigned after_time, unsigned* out_time, AntennaId *out_ant);
 
