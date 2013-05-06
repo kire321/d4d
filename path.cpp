@@ -64,3 +64,21 @@ AntennaId Path::get_next_step(bool from_beginning)
     }
 
 }
+
+AntennaId Path::get_first_step()
+{
+    if (!antenna_id_sequence.empty()) {
+        return antenna_id_sequence.front();
+    } else {
+        return -1;
+    }
+}
+
+AntennaId Path::get_last_step()
+{
+    if (!antenna_id_sequence.empty()) {
+        return antenna_id_sequence.back();
+    } else {
+        return -1;
+    }
+}

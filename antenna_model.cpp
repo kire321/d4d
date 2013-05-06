@@ -97,8 +97,11 @@ Path AntennaModel::path_prediction(AntennaId start, AntennaId end,
     unsigned time)
 {
     if (LOG) std::cerr << "making path prediction\n";
-    Path predicted_path;
 
+    assert(time > 0);
+
+    Path predicted_path;
+    predicted_path.add_step(next_step_prediction(start, end, time--));
     for (; time > 1; time--) {
         predicted_path.add_step(next_step_prediction(
             predicted_path.get_last_step(), end, time));
@@ -111,7 +114,7 @@ Path AntennaModel::path_prediction(AntennaId start, AntennaId end,
 Path AntennaModel::path_prediction(AntennaId start, unsigned time)
 {
     Path predicted_path;
-
+    predicted_path.add_step(next_step_prediction(start, time--));
     for (; time > 0; time--) {
         predicted_path.add_step(next_step_prediction(
             predicted_path.get_last_step(), time));
