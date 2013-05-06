@@ -16,7 +16,7 @@ class User
     UserId id;
     multiDimVala<float> smoothed;
     void smooth();
-    vector<Event*> predictions;
+    vector<Event> predictions;
 
     vector<Event*> events;
     unsigned num_unsmoothed_events; // Only smooth once we have 10 new events

@@ -71,16 +71,16 @@ void User::add_event(Event* event)
 
     // See if we had a prediction for it; either way, delete all predictions
     // preceeding the event
-    vector<Event*>::iterator pr = predictions.begin();
-    while (pr != predictions.end()) {
-        unsigned prediction_time = (*pr)->day * 10000 + (*pr)->hour * 100 +
-            (*pr)->minute;
+    vector<Event>::iterator pr;
+    unsigned prediction_time;
+    for (pr = predictions.begin(); pr != predictions.end(); pr++) {
+        prediction_time = pr->day * 10000 + pr->hour * 100 +
+            pr->minute;
         if (prediction_time == new_event_time) {
-            cout << to_json((*pr), true) << endl;
+            cout << to_json(&(*pr), true) << endl;
         } else if (prediction_time > new_event_time) {
             break;
         }
-        pr++;
     }
     predictions.erase(predictions.begin(), pr);
 
@@ -160,15 +160,15 @@ void User::make_prediction(Path& predicted_path, unsigned day, unsigned hour)
 {
     AntennaId predicted_antenna = predicted_path.get_next_step(true);
     while (predicted_antenna >= 0) { // Is a valid antenna
-        Event* new_predicted_event = (Event*)malloc(sizeof(Event));
-        new_predicted_event->user_id = id;
-        new_predicted_event->antenna_id = predicted_antenna;
+        Event new_predicted_event;
+        new_predicted_event.user_id = id;
+        new_predicted_event.antenna_id = predicted_antenna;
         if (hour >= 24) {
             hour = 0;
             day++; // Should only happen once, if at all
         }
-        new_predicted_event->hour = hour++;
-        new_predicted_event->day = day;
+        new_predicted_event.hour = hour++;
+        new_predicted_event.day = day;
         predictions.push_back(new_predicted_event);
 
         predicted_antenna = predicted_path.get_next_step();
