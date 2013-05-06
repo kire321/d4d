@@ -20,8 +20,7 @@ class AntennaModel
     public:
         // Members
         static map<AntennaId, Antenna*> antennas;
-        static map<AntennaId, map<AntennaId, map<unsigned, map<AntennaId,
-            unsigned> > > > transition_frequencies;
+        static map<AntennaId, map<AntennaId, map<unsigned, vector<AntennaId> > > > transitions;
 
         // Initialize
         static void init(ifstream& file);
