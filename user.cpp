@@ -118,7 +118,7 @@ void User::smooth() {
 
 multiDimVala<float> User::getSmoothed()
 {
-    if (is_dirty()) smooth();
+    if (is_dirty() || events.size() < 10) smooth();
 
     return smoothed;
 }
