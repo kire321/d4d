@@ -67,12 +67,15 @@ void parse_events(istream& file)
             prediction.user_id = user->get_id();
             prediction.day = event.day;
             prediction.hour = event.hour;
-            prediction.antenna_id = event.antenna_id;
+            prediction.antenna_id = previous_event.antenna_id;
             // Since a unit of time is an hour, no motion if delta < 1 hour
             if (previous_event.day != event.day || previous_event.hour !=
                 event.hour) {
+                assert(previous_event.day < event.day ||
+                    (previous_event.day == event.day &&
+                    previous_event.hour < event.hour));
                 int num_steps = (int)event.hour - (int)previous_event.hour;
-                num_steps += ((int)event.day - (int)previous_event.day) * 24;
+                if (num_steps <= 0) num_steps += 24;
                 int path_len = (int)likely_event.hour -
                     (int)previous_event.hour;
                 path_len +=

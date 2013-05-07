@@ -73,6 +73,9 @@ void User::next_likely_event(Event* after_event, Event* likely_event)
         return;
     }
 
+    likely_event->user_id = id;
+    likely_event->day = after_event->day;
+
     unsigned after_time = after_event-> hour;
     unsigned after_minute = (after_time + 1) * 60;
 
@@ -84,6 +87,17 @@ void User::next_likely_event(Event* after_event, Event* likely_event)
         if (event_minute > after_minute) {
             next_event = event;
         }
+    }
+    if (next_event == NULL) {
+        next_event = events.at(0);
+        likely_event->day += 1;
+    }
+
+    likely_event->hour = (next_event->hour * 60 +
+        (next_event->minute + 30) / 60);
+    if (likely_event->hour >= 24) {
+        likely_event->hour %= 24;
+        likely_event->day += 1;
     }
 
     float smoothed_lat = 0;
@@ -103,13 +117,6 @@ void User::next_likely_event(Event* after_event, Event* likely_event)
     smoothed_lat /= weight_sum;
     smoothed_lon /= weight_sum;
 
-    likely_event->user_id = id;
-    likely_event->day = after_event->day;
-    likely_event->hour = (event->hour * 60 + (event->minute + 30) / 60);
-    if (likely_event->hour >= 24) {
-        likely_event->hour %= 24;
-        likely_event->day += 1;
-    }
     likely_event->antenna_id = AntennaModel::find_nearest_antenna(smoothed_lat,
         smoothed_lon)->get_id();
 }
