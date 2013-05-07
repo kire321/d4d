@@ -3,11 +3,6 @@ CFLAGS=-g -Wall -O3
 
 default: predictor
 
-analysis: main.o \
-	user.o \
-	antenna.o
-		$(CC) $(CFLAGS) -o $@ $^
-
 run:
 	./predictor ../data/ANT_POS.TSV < ../data/events/sorted0.TSV  > ../output/output.json 2> ../output/err.txt
 
