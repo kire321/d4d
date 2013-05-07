@@ -48,8 +48,8 @@ void parse_events(istream& file)
         }
         if (LOG) cerr << "Read event\n";
 
+        UserModel::add_user(event.user_id);
         User* user = UserModel::find_user_by_id(event.user_id);
-        assert(user);
         if (LOG) cerr << "got user for event\n";
 
         // Get endpoints of path that would cover the new event so we can make

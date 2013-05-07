@@ -22,8 +22,9 @@ bool UserModel::add_user(UserId id)
 
 void UserModel::update(Event* event)
 {
-    add_user(event->user_id);
     User* user = find_user_by_id(event->user_id);
+
+    assert(user);
 
     user->add_event(event);
 }
