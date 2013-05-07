@@ -97,34 +97,19 @@ Antenna* AntennaModel::find_nearest_antenna(float lat, float lon)
     return nearest;
 }
 
-Path AntennaModel::path_prediction(AntennaId start, AntennaId end,
-    unsigned time)
+AntennaId AntennaModel::predict_location(AntennaId start, AntennaId end,
+    unsigned num_steps, unsigned path_len)
 {
     if (LOG) std::cerr << "making path prediction\n";
 
-    assert(time > 0);
+    assert(num_steps <= path_len && num_steps > 0);
 
-    Path predicted_path;
-    predicted_path.add_step(next_step_prediction(start, end, time--));
-    for (; time > 1; time--) {
-        predicted_path.add_step(next_step_prediction(
-            predicted_path.get_last_step(), end, time));
-    }
-    predicted_path.add_step(end);
-
-    return predicted_path;
-}
-
-Path AntennaModel::path_prediction(AntennaId start, unsigned time)
-{
-    Path predicted_path;
-    predicted_path.add_step(next_step_prediction(start, time--));
-    for (; time > 0; time--) {
-        predicted_path.add_step(next_step_prediction(
-            predicted_path.get_last_step(), time));
+    AntennaId next_step = start;
+    for (; num_steps > 0; num_steps--) {
+        next_step = next_step_prediction(next_step, end, path_len--);
     }
 
-    return predicted_path;
+    return next_step;
 }
 
 AntennaId AntennaModel::next_step_prediction(AntennaId start, AntennaId end, unsigned time)
@@ -142,10 +127,4 @@ AntennaId AntennaModel::next_step_prediction(AntennaId start, AntennaId end, uns
         straight_line_path.get_next_step(true);
         return straight_line_path.get_next_step();
     }
-}
-
-AntennaId AntennaModel::next_step_prediction(AntennaId current, unsigned time)
-{
-    // TODO:
-    return 1;
 }

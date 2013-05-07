@@ -47,29 +47,53 @@ void parse_events(istream& file)
             continue;
         }
         if (LOG) cerr << "Read event\n";
+
+        User* user = UserModel::find_user_by_id(event.user_id);
+        assert(user);
+        if (LOG) cerr << "got user for event\n";
+
+        // Get endpoints of path that would cover the new event so we can make
+        // a prediction based on previous data
+        Event likely_event, previous_event;
+        user->next_likely_event(&event, &likely_event);
+        if (LOG) cerr << "Got next likely location for user\n";
+        user->previous_event(&previous_event);
+        if (LOG) cerr << "Got previous location for user\n";
+
+        if (previous_event.antenna_id > 0) { // -1 means user has no history
+            assert(likely_event.antenna_id > 0);
+
+            Event prediction;
+            prediction.user_id = user->get_id();
+            prediction.day = event.day;
+            prediction.hour = event.hour;
+            prediction.antenna_id = event.antenna_id;
+            // Since a unit of time is an hour, no motion if delta < 1 hour
+            if (previous_event.day != event.day || previous_event.hour !=
+                event.hour) {
+                int num_steps = (int)event.hour - (int)previous_event.hour;
+                num_steps += ((int)event.day - (int)previous_event.day) * 24;
+                int path_len = (int)likely_event.hour -
+                    (int)previous_event.hour;
+                path_len +=
+                    ((int)likely_event.day - (int)previous_event.day) * 24;
+
+                AntennaId prediction_location = AntennaModel::predict_location(
+                    previous_event.antenna_id, likely_event.antenna_id,
+                    num_steps, path_len);
+                if (LOG) cerr << "predicted a location\n";
+
+                prediction.antenna_id = prediction_location;
+            }
+            cout << User::to_json(&prediction, true);
+            if (LOG) cerr << "Made a prediction\n";
+        }
+
         UserModel::update(&event);
+        cout << User::to_json(&event, false);
         if (LOG) cerr << "Updated user model\n";
         AntennaModel::update(&event);
         if (LOG) cerr << "Updated Antenna model\n";
-
-        User* user = UserModel::find_user_by_id(event.user_id);
-        AntennaId likely_location;
-        unsigned likely_end;
-        assert(user);
-        if (LOG) cerr << "got user for event\n";
-        user->next_likely_location(event.hour, &likely_end,
-            &likely_location);
-        if (LOG) cerr << "Got next likely location for user\n";
-        int duration = (int)likely_end - (int)event.hour;
-        if (duration <= 0) duration += 24;
-        Path predicted_path = AntennaModel::path_prediction(event.antenna_id,
-            likely_location, duration);
-        if (LOG) cerr << "predicted a path\n";
-        // Rerun with non-endpoint prediction
-        // Path predicted_path_no_endpoint = antenna_model.path_prediction(
-        //     event.antenna_id, event.hour);
-        user->make_prediction(predicted_path, event.day, event.hour + 1);
-        if (LOG) cerr << "Made a prediction\n";
     }
     if (LOG) cerr << "Done parsing events\n";
 }

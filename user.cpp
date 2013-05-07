@@ -56,43 +56,24 @@ void User::add_event(Event* event)
     new_event->hour = event->hour;
     new_event->minute = event->minute;
 
-    // To use for comparison below
-    unsigned new_event_time = new_event->day * 10000 + new_event->hour * 100 +
-        new_event->minute;
-
     // TODO: maybe use a LL to make insertion O(1)
     // Keep in sorted order
     vector<Event*>::iterator ev;
     for (ev = events.begin(); ev != events.end() && (new_event->hour * 60 +
          new_event->minute < (*ev)->hour * 60 + (*ev)->minute); ev++);
     events.insert(ev, new_event);
-    cout << to_json(new_event, false) << endl;
 
-    // See if we had a prediction for it; either way, delete all predictions
-    // preceeding the event
-    vector<Event>::iterator pr;
-    unsigned prediction_time;
-    for (pr = predictions.begin(); pr != predictions.end(); pr++) {
-        prediction_time = pr->day * 10000 + pr->hour * 100 +
-            pr->minute;
-        if (prediction_time == new_event_time) {
-            cout << to_json(&(*pr), true) << endl;
-        } else if (prediction_time > new_event_time) {
-            break;
-        }
+    last_event = new_event;
+}
+
+void User::next_likely_event(Event* after_event, Event* likely_event)
+{
+    if (events.empty()) {
+        likely_event->antenna_id = -1;
+        return;
     }
-    predictions.erase(predictions.begin(), pr);
-}
 
-Event* User::get_last_event()
-{
-    return events.back();
-}
-
-
-void User::next_likely_location(unsigned after_time, unsigned *out_time,
-    AntennaId *out_antenna)
-{
+    unsigned after_time = after_event-> hour;
     unsigned after_minute = (after_time + 1) * 60;
 
     Event* next_event = NULL;
@@ -104,8 +85,6 @@ void User::next_likely_location(unsigned after_time, unsigned *out_time,
             next_event = event;
         }
     }
-    // FIXME: what if no events??
-    if (next_event == NULL) next_event = events.at(0);
 
     float smoothed_lat = 0;
     float smoothed_lon = 0;
@@ -124,26 +103,22 @@ void User::next_likely_location(unsigned after_time, unsigned *out_time,
     smoothed_lat /= weight_sum;
     smoothed_lon /= weight_sum;
 
-    *out_time = (event->hour + (event->minute + 30) / 60) % 24;
-    *out_antenna = AntennaModel::find_nearest_antenna(smoothed_lat,
+    likely_event->user_id = id;
+    likely_event->day = after_event->day;
+    likely_event->hour = (event->hour * 60 + (event->minute + 30) / 60);
+    if (likely_event->hour >= 24) {
+        likely_event->hour %= 24;
+        likely_event->day += 1;
+    }
+    likely_event->antenna_id = AntennaModel::find_nearest_antenna(smoothed_lat,
         smoothed_lon)->get_id();
 }
 
-void User::make_prediction(Path& predicted_path, unsigned day, unsigned hour)
+void User::previous_event(Event* previous_event)
 {
-    AntennaId predicted_antenna = predicted_path.get_next_step(true);
-    while (predicted_antenna >= 0) { // Is a valid antenna
-        Event new_predicted_event;
-        new_predicted_event.user_id = id;
-        new_predicted_event.antenna_id = predicted_antenna;
-        if (hour >= 24) {
-            hour = 0;
-            day++; // Should only happen once, if at all
-        }
-        new_predicted_event.hour = hour++;
-        new_predicted_event.day = day;
-        predictions.push_back(new_predicted_event);
-
-        predicted_antenna = predicted_path.get_next_step();
+    if (last_event) {
+        *previous_event = *last_event;
+    } else { // Error; only occurs the first time
+        previous_event->antenna_id = -1;
     }
 }

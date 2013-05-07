@@ -16,8 +16,6 @@ using std::ifstream;
 
 class AntennaModel
 {
-    // multiDimVala<float>* antennas; // TABLE
-
     public:
         // Members
         static map<AntennaId, Antenna*> antennas;
@@ -29,13 +27,11 @@ class AntennaModel
         // Modify/access
         static bool add_antenna(valarray<float> antenna_data);
         static void update(Event* event);
-        static Antenna* find_antenna_by_id(AntennaId id); // TODO: * or actual objc
+        static Antenna* find_antenna_by_id(AntennaId id);
         static Antenna* find_nearest_antenna(float lat, float lon);
 
-        static Path path_prediction(AntennaId start, AntennaId end, unsigned time);
-        static Path path_prediction(AntennaId current, unsigned time);
-
-        // void print_statistics(ofstream& file);
+        static AntennaId predict_location(AntennaId start, AntennaId end,
+            unsigned num_steps, unsigned path_len);
 
     private:
 
