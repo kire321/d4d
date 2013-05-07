@@ -5,6 +5,10 @@
 #include "user_model.h"
 #include "user.h"
 
+using std::cout;
+using std::cerr;
+using std::endl;
+
 map<AntennaId, map<AntennaId, map<unsigned, vector<AntennaId> > > >
     AntennaModel::transitions =
     map<AntennaId, map<AntennaId, map <unsigned, vector<AntennaId> > > >();

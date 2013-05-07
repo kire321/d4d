@@ -12,7 +12,6 @@ run:
 	./predictor ../data/ANT_POS.TSV < ../data/events/sorted0.TSV  > ../output/output.json 2> ../output/err.txt
 
 predictor: predictor.o \
-	antenna.o \
 	user.o \
 	antenna_model.o \
 	user_model.o \
@@ -22,10 +21,6 @@ predictor: predictor.o \
 main.o: user.h \
 	antenna.h
 
-# %.o: %.cpp %.h
-
-antenna.o: antenna.cpp antenna.h types.h multiDimVala.h
-	$(CC) -c $< -o $@ $(CFLAGS)
 user.o: user.cpp user.h antenna_model.h types.h path.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 antenna_model.o: antenna_model.cpp antenna_model.h utils.h user_model.h user.h antenna.h path.h types.h

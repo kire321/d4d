@@ -12,6 +12,7 @@
 using std::vector;
 using std::map;
 using std::valarray;
+using std::ifstream;
 
 class AntennaModel
 {
