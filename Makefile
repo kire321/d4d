@@ -2,7 +2,6 @@ CC=g++
 CFLAGS=-g -Wall -O3
 
 default: predictor
-	#	analysis
 
 analysis: main.o \
 	user.o \
@@ -27,7 +26,7 @@ main.o: user.h \
 
 antenna.o: antenna.cpp antenna.h types.h multiDimVala.h
 	$(CC) -c $< -o $@ $(CFLAGS)
-user.o: user.cpp user.h antenna_model.h types.h multiDimVala.h path.h
+user.o: user.cpp user.h antenna_model.h types.h path.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 antenna_model.o: antenna_model.cpp antenna_model.h utils.h user_model.h user.h antenna.h path.h types.h
 	$(CC) -c $< -o $@ $(CFLAGS)

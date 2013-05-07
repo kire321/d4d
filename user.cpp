@@ -3,12 +3,6 @@
 #include <iostream>
 #include <sstream>
 
-// #include <boost/property_tree/ptree.hpp>
-// #include <boost/property_tree/json_parser.hpp>
-// 
-// using boost::property_tree::ptree;
-// using boost::property_tree::write_json;
-
 #include "user.h"
 #include "antenna_model.h"
 
@@ -66,7 +60,12 @@ void User::add_event(Event* event)
     unsigned new_event_time = new_event->day * 10000 + new_event->hour * 100 +
         new_event->minute;
 
-    events.push_back(new_event);
+    // TODO: maybe use a LL to make insertion O(1)
+    // Keep in sorted order
+    vector<Event*>::iterator ev;
+    for (ev = events.begin(); ev != events.end() && (new_event->hour * 60 +
+         new_event->minute < (*ev)->hour * 60 + (*ev)->minute); ev++);
+    events.insert(ev, new_event);
     cout << to_json(new_event, false) << endl;
 
     // See if we had a prediction for it; either way, delete all predictions
@@ -83,44 +82,6 @@ void User::add_event(Event* event)
         }
     }
     predictions.erase(predictions.begin(), pr);
-
-    set_dirty();
-}
-
-void User::smooth() {
-    // TODO: clean up this hack of recreating erik's data
-    vector<int> times;
-    vector<valarray<float> > original;
-    vector<Event*>::iterator event;
-    for (event = events.begin(); event != events.end(); event++) {
-        times.push_back((*event)->hour * 60 + (*event)->minute);
-        Antenna* antenna =
-            AntennaModel::find_antenna_by_id((*event)->antenna_id);
-        valarray<float> temp(2);
-        temp[0] = antenna->get_latitude();
-        temp[1] = antenna->get_longitude();
-        original.push_back(temp);
-    }
-
-    num_unsmoothed_events = 0;
-
-    multiDimVala<float> vala(original);
-    smoothed = multiDimVala<float>(original.size(),2);
-    for (unsigned i=0; i<original.size(); ++i) {
-        multiDimVala<float> gauss(times.size(),2);
-        for (unsigned j=0; j<times.size(); ++j)
-            gauss.getView(0,j)=pdf(normal(times[i],60),times[j]);
-        valarray<float> denom=gauss.sum(0);
-        gauss.data*=vala.data;
-        smoothed.getView(0,i)=gauss.sum(0)/denom;
-    }
-}
-
-multiDimVala<float> User::getSmoothed()
-{
-    if (is_dirty() || events.size() < 10) smooth();
-
-    return smoothed;
 }
 
 Event* User::get_last_event()
@@ -128,32 +89,44 @@ Event* User::get_last_event()
     return events.back();
 }
 
-typedef pair<int,int> ii;
-bool comparison(ii i, ii j) {
-	//sort based on the first value
-	return i.first<j.first;
-}
 
-
-// TODO: out_time is length or #?
-void User::next_likely_location(unsigned after_time, unsigned *out_time, AntennaId *out_ant)
+void User::next_likely_location(unsigned after_time, unsigned *out_time,
+    AntennaId *out_antenna)
 {
-    vector<ii> zipped;
-    for (unsigned i = 0; i < events.size(); ++i) {
-        int event_minute = events[i]->hour * 60 + events[i]->minute;
-        zipped.push_back(ii(event_minute,i));
+    unsigned after_minute = (after_time + 1) * 60;
+
+    Event* next_event = NULL;
+    Event* event = NULL;
+    for (unsigned i = 0; i < events.size(); i++) {
+        event = events.at(i);
+        unsigned event_minute = event->hour * 60 + event->minute;
+        if (event_minute > after_minute) {
+            next_event = event;
+        }
     }
-    sort(zipped.begin(), zipped.end(), comparison);
-    //The following slow search doesn't affect running time since we just did a sort which is slower
-    unsigned i = 0;
-    for (; i < zipped.size(); i++) {
-        if (zipped[i].first > (int)(after_time+1)*60) break;
+    // FIXME: what if no events??
+    if (next_event == NULL) next_event = events.at(0);
+
+    float smoothed_lat = 0;
+    float smoothed_lon = 0;
+    float weight_sum = 0;
+    unsigned next_event_minute = next_event->hour * 60 + next_event->minute;
+    for (unsigned i = 0; i < events.size(); i++) {
+        event = events.at(i);
+        unsigned event_minute = event->hour * 60 + event->minute;
+        Antenna* antenna = AntennaModel::find_antenna_by_id(event->antenna_id);
+
+        float weight = pdf(normal(next_event_minute, 30), event_minute);
+        weight_sum += weight;
+        smoothed_lat += weight * antenna->get_latitude();
+        smoothed_lon += weight * antenna->get_longitude();
     }
-    if (i == zipped.size()) i = 0;
-    ii pair1 = zipped[i];
-    *out_time = (pair1.first + 30)/60;
-    valarray<float> latLon=getSmoothed().getCopy(0,zipped[i].second);
-    *out_ant=AntennaModel::find_nearest_antenna(latLon[0],latLon[1])->get_id();
+    smoothed_lat /= weight_sum;
+    smoothed_lon /= weight_sum;
+
+    *out_time = (event->hour + (event->minute + 30) / 60) % 24;
+    *out_antenna = AntennaModel::find_nearest_antenna(smoothed_lat,
+        smoothed_lon)->get_id();
 }
 
 void User::make_prediction(Path& predicted_path, unsigned day, unsigned hour)
