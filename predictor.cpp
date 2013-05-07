@@ -88,12 +88,12 @@ void parse_events(istream& file)
 
                 prediction.antenna_id = prediction_location;
             }
-            cout << User::to_json(&prediction, true);
+            cout << User::to_json(&prediction, true) << endl;
             if (LOG) cerr << "Made a prediction\n";
         }
 
         UserModel::update(&event);
-        cout << User::to_json(&event, false);
+        cout << User::to_json(&event, false) << endl;
         if (LOG) cerr << "Updated user model\n";
         AntennaModel::update(&event);
         if (LOG) cerr << "Updated Antenna model\n";
