@@ -92,7 +92,7 @@ AntennaId User::get_smoothed_antenna(time_duration time)
         if (diff > 12 * 60) {
             diff = 24 * 60 - diff;
         }
-        float weight = pdf(normal(0, 30), diff);
+        float weight = pdf(normal(0, AntennaModel::timestep), diff);
         weight_sum += weight;
         smoothed_lat += weight * antenna->get_latitude();
         smoothed_lon += weight * antenna->get_longitude();
