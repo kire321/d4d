@@ -20,9 +20,10 @@ class AntennaModel
         // Members
         static map<AntennaId, Antenna*> antennas;
         static map<AntennaId, map<AntennaId, map<unsigned, vector<AntennaId> > > > transitions;
+        static int timestep;
 
         // Initialize
-        static void init(ifstream& file);
+        static void init(ifstream& file, int step);
 
         // Modify/access
         static bool add_antenna(valarray<float> antenna_data);

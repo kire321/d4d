@@ -6,6 +6,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 using namespace boost;
 using std::vector;
@@ -24,3 +25,7 @@ valarray<T> splitConvert(string line, const char *seperator)
     return toret;
 }
 
+int to_minutes(time_duration duration)
+{
+    return duration.total_seconds() / 60;
+}

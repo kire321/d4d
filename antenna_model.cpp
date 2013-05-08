@@ -14,8 +14,9 @@ map<AntennaId, map<AntennaId, map<unsigned, vector<AntennaId> > > >
     map<AntennaId, map<AntennaId, map <unsigned, vector<AntennaId> > > >();
 map<AntennaId, Antenna*> AntennaModel::antennas =
     map<AntennaId, Antenna*>();
+int AntennaModel::timestep = 0;
 
-void AntennaModel::init(ifstream& file)
+void AntennaModel::init(ifstream& file, int step)
 {
     string line;
     while (file.good()) {
@@ -29,6 +30,8 @@ void AntennaModel::init(ifstream& file)
         }
         if (LOG) std::cout << "Added antenna\n";
     }
+
+    timestep = step;
 }
 
 bool AntennaModel::add_antenna(valarray<float> antenna_data)
