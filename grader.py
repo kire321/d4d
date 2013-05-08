@@ -4,6 +4,8 @@ import sys
 import json
 import numpy as np
 if sys.argv[1] != "noplot":
+    import matplotlib as mpl
+    mpl.use('Agg')
     import matplotlib.pyplot as plt
 
 def objFromDict(mapping):
