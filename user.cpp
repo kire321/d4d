@@ -59,7 +59,7 @@ void User::add_event(Event* event)
     new_event->time = event->time;
 
     // Keep in sorted order
-    vector<Event*>::iterator pos = std::lower_bound(events.begin(),
+    vector<Event*>::iterator pos = std::upper_bound(events.begin(),
         events.end(), new_event, earlier_event_time);
     events.insert(pos, new_event);
 
@@ -104,15 +104,24 @@ void User::next_likely_event(Event* after_event, Event* likely_event)
     likely_event->user_id = after_event->user_id;
 
     // Set time
-    // FIXME _ want after_event + timestep
-    vector<Event*>::iterator ev = std::lower_bound(events.begin(), events.end(),
+    vector<Event*>::iterator ev = std::upper_bound(events.begin(), events.end(),
         after_event, earlier_event_time);
+    bool add_day = false;
     if (ev == events.end()) {
         ev = events.begin();
-        likely_event->time = (*ev)->time + date_duration(1);
-    } else {
-        likely_event->time = (*ev)->time;
+        add_day = true;
     }
+    ptime next_time(after_event->time.date(), (*ev)->time.time_of_day());
+    // TODO: clean this up
+    if (to_minutes(next_time - after_event->time) < AntennaModel::timestep) {
+        if (++ev == events.end()) {
+            ev = events.begin();
+            add_day = true;
+        }
+        next_time = ptime(after_event->time.date(), (*ev)->time.time_of_day());
+    }
+    likely_event->time = next_time;
+    if (add_day) likely_event->time += date_duration(1);
 
 
     // Set location = smoothed antenna
