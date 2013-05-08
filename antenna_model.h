@@ -36,6 +36,6 @@ class AntennaModel
 
     private:
 
-        static AntennaId next_step_prediction(AntennaId start, AntennaId end, unsigned elapsed_time);
-        static AntennaId next_step_prediction(AntennaId current, unsigned elapsed_time);
+        static AntennaId next_step_prediction(AntennaId start, AntennaId end, unsigned num_steps);
+        // static AntennaId next_step_prediction(AntennaId current, unsigned elapsed_time);
 };

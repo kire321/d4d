@@ -52,25 +52,25 @@ void AntennaModel::update(Event* event)
 {
     UserId user_id = event->user_id;
     AntennaId antenna_id = event->antenna_id;
-    unsigned hour = event->hour;
+    ptime time = event->time;
 
     User* user = UserModel::find_user_by_id(user_id);
     Event* last_event = user->get_last_event();
     AntennaId origin_antenna_id = last_event->antenna_id;
-    unsigned elapsed_time = hour - last_event->hour;
-    if (elapsed_time < 0) elapsed_time += 24;
-    if (LOG) std::cout << "Found last user event. Interpolating path\n";
+    if (LOG) std::cerr << "Found last user event. Interpolating path\n";
 
+    int elapsed_minutes = to_minutes(time - last_event->time);
+    int num_steps = elapsed_minutes / timestep;
     Path interpolated_path = Path::interpolate_path(origin_antenna_id,
-        antenna_id, hour);
-    if (LOG) std::cout << "Interpolated path\n";
+        antenna_id, num_steps);
+    if (LOG) std::cerr << "Interpolated path\n";
 
     // Increment next-step transition frequency for the i,j path on t time units
     AntennaId current_antenna, next_antenna;
     current_antenna = interpolated_path.get_next_step(true);
     while ((next_antenna = interpolated_path.get_next_step()) != -1) {
         transitions[current_antenna][interpolated_path.get_last_step()][
-            elapsed_time--].push_back(next_antenna);
+            num_steps--].push_back(next_antenna);
         current_antenna = next_antenna;
     }
 }
@@ -115,18 +115,19 @@ AntennaId AntennaModel::predict_location(AntennaId start, AntennaId end,
     return next_step;
 }
 
-AntennaId AntennaModel::next_step_prediction(AntennaId start, AntennaId end, unsigned time)
+AntennaId AntennaModel::next_step_prediction(AntennaId start, AntennaId end,
+    unsigned num_steps)
 {
     if (LOG) std::cerr << "making next step pred\n";
 
     // Vector of all transitions made
-    vector<AntennaId> next_steps = transitions[start][end][time];
+    vector<AntennaId> next_steps = transitions[start][end][num_steps];
     if (next_steps.size() != 0) {
         return next_steps.at(rand() % next_steps.size());
     } else {
         // If we have no history, return the first step along the straight line
         // path (normalized for time)
-        Path straight_line_path = Path::interpolate_path(start, end, time);
+        Path straight_line_path = Path::interpolate_path(start, end, num_steps);
         straight_line_path.get_next_step(true);
         return straight_line_path.get_next_step();
     }

@@ -5,7 +5,7 @@
 #include "antenna.h"
 
 Path Path::interpolate_path(AntennaId start, AntennaId end,
-    unsigned elapsed_time)
+    unsigned num_steps)
 {
     Antenna* start_antenna = AntennaModel::find_antenna_by_id(start);
     Antenna* end_antenna = AntennaModel::find_antenna_by_id(end);
@@ -23,7 +23,7 @@ Path Path::interpolate_path(AntennaId start, AntennaId end,
     interpolated_path.add_step(start);
 
     for (unsigned i = 1; i <= elapsed_time; i++) {
-        float interval = (float)i / (float)elapsed_time;
+        float interval = (float)i / (float)num_steps;
         float new_lat = start_lat + interval * lat_diff;
         float new_lon = start_lon + interval * lon_diff;
 

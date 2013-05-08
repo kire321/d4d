@@ -13,14 +13,14 @@ class Path
 
     public:
         static Path interpolate_path(AntennaId start, AntennaId end,
-            unsigned time); // How do we decide partial time? do we output barycentric weighting?
+            unsigned num_steps);
 
         Path();
         Path(std::vector<unsigned> ids);
 
         void add_step(AntennaId id);
 
-        unsigned get_elapsed_time() { return antenna_id_sequence.size(); };
+        unsigned get_num_steps() { return antenna_id_sequence.size(); };
         // Iterator that returns next step
         AntennaId get_next_step(bool from_beginning = false);
         AntennaId get_first_step();
