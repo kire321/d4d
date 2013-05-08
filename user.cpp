@@ -1,4 +1,4 @@
-#include <cstdlib> // TODO: remove me
+#include <cstdlib>
 #include <assert.h>
 #include <iostream>
 #include <sstream>
@@ -13,7 +13,7 @@
 
 using std::cerr;
 using std::endl;
-using std::abs
+using std::abs;
 using std::stringstream;
 using boost::gregorian::date;
 using boost::gregorian::date_duration;
@@ -42,6 +42,16 @@ string User::to_json(Event* event, bool is_prediction)
     return json.str();
 }
 
+int User::to_minutes(time_duration duration)
+{
+    return duration.total_seconds() / 60;
+}
+
+bool User::earlier_event_time(Event* a, Event* b)
+{
+    return a->time.time_of_day() <= b->time.time_of_day();
+}
+
 User::~User()
 {
     for (unsigned i = 0; i < events.size(); i++) {
@@ -66,22 +76,23 @@ void User::add_event(Event* event)
     last_event = new_event;
 }
 
-AntennaId User::smooth(time_duration time) {
-    unsigned next_event_minute = to_minutes(time.time_of_day());
+AntennaId User::get_smoothed_antenna(time_duration time)
+{
+    unsigned next_event_minute = to_minutes(time);
 
     float smoothed_lat = 0;
     float smoothed_lon = 0;
     float weight_sum = 0;
     for(unsigned i = 0; i < events.size(); i++) {
-        event = events.at(i);
-        unsigned event_minute = to_minutes(event.time.time_of_day());
-	Antenna* antenna =
-		AntennaModel::find_antenna_by_id(event->antenna_id);
+        Event* event = events.at(i);
+        unsigned event_minute = to_minutes(event->time.time_of_day());
+        Antenna* antenna = AntennaModel::find_antenna_by_id(event->antenna_id);
 
-	int dif = abs(event_minute - next_event_minute);
-	if(dif > 12 * 60)
-		dif = 24 * 60 - dif;
-	float weight = pdf(normal(0, 30), dif);
+        int diff = abs(event_minute - next_event_minute);
+        if (diff > 12 * 60) {
+            diff = 24 * 60 - diff;
+        }
+        float weight = pdf(normal(0, 30), diff);
         weight_sum += weight;
         smoothed_lat += weight * antenna->get_latitude();
         smoothed_lon += weight * antenna->get_longitude();
@@ -123,33 +134,9 @@ void User::next_likely_event(Event* after_event, Event* likely_event)
     likely_event->time = next_time;
     if (add_day) likely_event->time += date_duration(1);
 
-
     // Set location = smoothed antenna
-    /////////////////////
-    // FIXME
-    unsigned next_event_minute = to_minutes((*ev)->time.time_of_day());
-
-    float smoothed_lat = 0;
-    float smoothed_lon = 0;
-    float weight_sum = 0;
-    unsigned next_event_minute = next_event->hour * 60 + next_event->minute;
-    for (unsigned i = 0; i < events.size(); i++) {
-        event = events.at(i);
-        unsigned event_minute = event->hour * 60 + event->minute;
-        Antenna* antenna = AntennaModel::find_antenna_by_id(event->antenna_id);
-
-        float weight = pdf(normal(next_event_minute, 30), event_minute);
-        weight_sum += weight;
-        smoothed_lat += weight * antenna->get_latitude();
-        smoothed_lon += weight * antenna->get_longitude();
-    }
-    // END FIXME
-    /////////////////////
-    smoothed_lat /= weight_sum;
-    smoothed_lon /= weight_sum;
-
-    likely_event->antenna_id = AntennaModel::find_nearest_antenna(smoothed_lat,
-        smoothed_lon)->get_id();
+    likely_event->antenna_id =
+        get_smoothed_antenna(likely_event->time.time_of_day());
 }
 
 void User::previous_event(Event* previous_event)

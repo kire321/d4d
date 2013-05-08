@@ -68,11 +68,12 @@ void parse_events(istream& file)
             prediction.time = event.time;
             prediction.antenna_id = previous_event.antenna_id;
             // No motion if delta < 1 timestep
-            int delta_time = to_minutes(event.time - previous_event.time)
+            int delta_time = User::to_minutes(event.time -
+                previous_event.time);
             if (delta_time > AntennaModel::timestep) {
                 int num_steps = delta_time / AntennaModel::timestep;
-                int path_len = to_minutes((int)likely_event.time -
-                    (int)previous_event.time) / AntennaModel::timestep;
+                int path_len = User::to_minutes(likely_event.time -
+                    previous_event.time) / AntennaModel::timestep;
 
                 AntennaId prediction_location = AntennaModel::predict_location(
                     previous_event.antenna_id, likely_event.antenna_id,

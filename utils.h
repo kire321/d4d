@@ -24,14 +24,3 @@ valarray<T> splitConvert(string line, const char *seperator)
     }
     return toret;
 }
-
-int to_minutes(time_duration duration)
-{
-    return duration.total_seconds() / 60;
-}
-
-bool earlier_event_time(Event* a, Event* b)
-{
-    return a->time.time_of_day() <= b->time.time_of_day();
-}
-

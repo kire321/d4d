@@ -59,7 +59,7 @@ void AntennaModel::update(Event* event)
     AntennaId origin_antenna_id = last_event->antenna_id;
     if (LOG) std::cerr << "Found last user event. Interpolating path\n";
 
-    int elapsed_minutes = to_minutes(time - last_event->time);
+    int elapsed_minutes = User::to_minutes(time - last_event->time);
     int num_steps = elapsed_minutes / timestep;
     Path interpolated_path = Path::interpolate_path(origin_antenna_id,
         antenna_id, num_steps);

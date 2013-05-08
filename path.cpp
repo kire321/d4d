@@ -22,7 +22,7 @@ Path Path::interpolate_path(AntennaId start, AntennaId end,
     Path interpolated_path;
     interpolated_path.add_step(start);
 
-    for (unsigned i = 1; i <= elapsed_time; i++) {
+    for (unsigned i = 1; i <= num_steps; i++) {
         float interval = (float)i / (float)num_steps;
         float new_lat = start_lat + interval * lat_diff;
         float new_lon = start_lon + interval * lon_diff;
