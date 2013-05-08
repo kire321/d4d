@@ -20,9 +20,10 @@ class AntennaModel
         // Members
         static map<AntennaId, Antenna*> antennas;
         static map<AntennaId, map<AntennaId, map<unsigned, vector<AntennaId> > > > transitions;
+        static int timestep;
 
         // Initialize
-        static void init(ifstream& file);
+        static void init(ifstream& file, int step);
 
         // Modify/access
         static bool add_antenna(valarray<float> antenna_data);
@@ -35,6 +36,6 @@ class AntennaModel
 
     private:
 
-        static AntennaId next_step_prediction(AntennaId start, AntennaId end, unsigned elapsed_time);
-        static AntennaId next_step_prediction(AntennaId current, unsigned elapsed_time);
+        static AntennaId next_step_prediction(AntennaId start, AntennaId end, unsigned num_steps);
+        // static AntennaId next_step_prediction(AntennaId current, unsigned elapsed_time);
 };

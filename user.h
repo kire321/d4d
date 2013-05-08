@@ -22,6 +22,8 @@ class User
     public:
         static void to_event(valarray<int> event_data, Event* event);
         static string to_json(Event* event, bool is_prediction = true);
+        static int to_minutes(time_duration duration);
+        static bool earlier_event_time(Event* a, Event* b);
 
         User(UserId id) : id(id), last_event(NULL) {};
         ~User();
@@ -34,4 +36,7 @@ class User
 
         void next_likely_event(Event* after_event, Event* likely_event);
         void previous_event(Event* previous_event);
+
+    private:
+        AntennaId get_smoothed_antenna(time_duration time);
 };

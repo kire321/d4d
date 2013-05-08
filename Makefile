@@ -1,5 +1,6 @@
 CC=g++
 CFLAGS=-g -Wall -O3
+LIBS=-lboost_date_time
 
 default: predictor
 
@@ -11,7 +12,7 @@ predictor: predictor.o \
 	antenna_model.o \
 	user_model.o \
 	path.o
-		$(CC) $(CFLAGS) -o $@ $^
+		$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
 main.o: user.h \
 	antenna.h

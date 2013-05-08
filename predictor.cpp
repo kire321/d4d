@@ -65,21 +65,15 @@ void parse_events(istream& file)
 
             Event prediction;
             prediction.user_id = user->get_id();
-            prediction.day = event.day;
-            prediction.hour = event.hour;
+            prediction.time = event.time;
             prediction.antenna_id = previous_event.antenna_id;
-            // Since a unit of time is an hour, no motion if delta < 1 hour
-            if (previous_event.day != event.day || previous_event.hour !=
-                event.hour) {
-                assert(previous_event.day < event.day ||
-                    (previous_event.day == event.day &&
-                    previous_event.hour < event.hour));
-                int num_steps = (int)event.hour - (int)previous_event.hour;
-                if (num_steps <= 0) num_steps += 24;
-                int path_len = (int)likely_event.hour -
-                    (int)previous_event.hour;
-                path_len +=
-                    ((int)likely_event.day - (int)previous_event.day) * 24;
+            // No motion if delta < 1 timestep
+            int delta_time = User::to_minutes(event.time -
+                previous_event.time);
+            if (delta_time > AntennaModel::timestep) {
+                int num_steps = delta_time / AntennaModel::timestep;
+                int path_len = User::to_minutes(likely_event.time -
+                    previous_event.time) / AntennaModel::timestep;
 
                 AntennaId prediction_location = AntennaModel::predict_location(
                     previous_event.antenna_id, likely_event.antenna_id,
@@ -105,6 +99,7 @@ int main(int argc, char** argv)
 {
     // Initialize Antenna Model
     char* antenna_filename = argv[1];
+    int timestep = atoi(argv[2]);
     ifstream antenna_file;
     string line;
     try {
@@ -113,7 +108,7 @@ int main(int argc, char** argv)
         cerr << "Could not open file " << antenna_filename <<
           ". Skipping file." << endl;
     }
-    AntennaModel::init(antenna_file);
+    AntennaModel::init(antenna_file, timestep);
     antenna_file.close();
 
     UserModel::init();
