@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <cmath>
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 
@@ -12,6 +13,7 @@
 
 using std::cerr;
 using std::endl;
+using std::abs
 using std::stringstream;
 using boost::gregorian::date;
 using boost::gregorian::date_duration;
@@ -62,6 +64,33 @@ void User::add_event(Event* event)
     events.insert(pos, new_event);
 
     last_event = new_event;
+}
+
+AntennaId User::smooth(time_duration time) {
+    unsigned next_event_minute = to_minutes(time.time_of_day());
+
+    float smoothed_lat = 0;
+    float smoothed_lon = 0;
+    float weight_sum = 0;
+    for(unsigned i = 0; i < events.size(); i++) {
+        event = events.at(i);
+        unsigned event_minute = to_minutes(event.time.time_of_day());
+	Antenna* antenna =
+		AntennaModel::find_antenna_by_id(event->antenna_id);
+
+	int dif = abs(event_minute - next_event_minute);
+	if(dif > 12 * 60)
+		dif = 24 * 60 - dif;
+	float weight = pdf(normal(0, 30), dif);
+        weight_sum += weight;
+        smoothed_lat += weight * antenna->get_latitude();
+        smoothed_lon += weight * antenna->get_longitude();
+    }
+    smoothed_lat /= weight_sum;
+    smoothed_lon /= weight_sum;
+
+    return AntennaModel::find_nearest_antenna(smoothed_lat,
+        smoothed_lon)->get_id();
 }
 
 void User::next_likely_event(Event* after_event, Event* likely_event)
