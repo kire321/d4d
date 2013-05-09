@@ -52,36 +52,11 @@ void parse_events(istream& file)
         User* user = UserModel::find_user_by_id(event.user_id);
         if (LOG) cerr << "got user for event\n";
 
-        // Get endpoints of path that would cover the new event so we can make
-        // a prediction based on previous data
-        Event likely_event, previous_event;
-        user->next_likely_event(&event, &likely_event);
-        if (LOG) cerr << "Got next likely location for user\n";
-        user->previous_event(&previous_event);
-        if (LOG) cerr << "Got previous location for user\n";
-
-        if (previous_event.antenna_id > 0) { // -1 means user has no history
-            assert(likely_event.antenna_id > 0);
-
-            Event prediction;
-            prediction.user_id = user->get_id();
-            prediction.time = event.time;
-            prediction.antenna_id = previous_event.antenna_id;
-            // No motion if delta < 1 timestep
-            int delta_time = User::to_minutes(event.time -
-                previous_event.time);
-            if (delta_time > AntennaModel::timestep) {
-                int num_steps = delta_time / AntennaModel::timestep;
-                int path_len = User::to_minutes(likely_event.time -
-                    previous_event.time) / AntennaModel::timestep;
-
-                AntennaId prediction_location = AntennaModel::predict_location(
-                    previous_event.antenna_id, likely_event.antenna_id,
-                    num_steps, path_len);
-                if (LOG) cerr << "predicted a location\n";
-
-                prediction.antenna_id = prediction_location;
-            }
+        Event prediction;
+        prediction.user_id = user->get_id();
+        prediction.time = event.time;
+        prediction.antenna_id = user->make_prediction(prediction.time);
+        if (prediction.antenna_id >= 0) { // -1 means failed for some reason
             cout << User::to_json(&prediction, true) << endl;
             if (LOG) cerr << "Made a prediction\n";
         }
@@ -89,8 +64,6 @@ void parse_events(istream& file)
         UserModel::update(&event);
         cout << User::to_json(&event, false) << endl;
         if (LOG) cerr << "Updated user model\n";
-        AntennaModel::update(&event);
-        if (LOG) cerr << "Updated Antenna model\n";
     }
     if (LOG) cerr << "Done parsing events\n";
 }
@@ -100,15 +73,17 @@ int main(int argc, char** argv)
     // Initialize Antenna Model
     char* antenna_filename = argv[1];
     int timestep = atoi(argv[2]);
-    ifstream antenna_file;
+    char* training_data_filename = argv[3];
+    ifstream antenna_file, training_data_file;
     string line;
     try {
         antenna_file.open(antenna_filename);
+        training_data_file.open(training_data_filename);
     } catch (...) {
-        cerr << "Could not open file " << antenna_filename <<
-          ". Skipping file." << endl;
+        cerr << "Could not open initialization files.\n";
+        exit(1);
     }
-    AntennaModel::init(antenna_file, timestep);
+    AntennaModel::init(antenna_file, training_data_file, timestep);
     antenna_file.close();
 
     UserModel::init();
