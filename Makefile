@@ -11,7 +11,8 @@ predictor: predictor.o \
 	user.o \
 	antenna_model.o \
 	user_model.o \
-	path.o
+	path.o \
+	utils.o
 		$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
 main.o: user.h \
@@ -26,6 +27,8 @@ user_model.o: user_model.cpp user_model.h user.h types.h
 path.o: path.cpp path.h antenna.h antenna_model.h types.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 predictor.o: predictor.cpp types.h utils.h antenna_model.h user_model.h
+	$(CC) -c $< -o $@ $(CFLAGS)
+utils.o: utils.cpp utils.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 clean:

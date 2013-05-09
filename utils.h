@@ -1,17 +1,25 @@
 #pragma once
 
 #include <valarray>
-#include <vector>
 #include <string>
+#include <iostream>
+#include <fstream>
+#include <vector>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+
+#include "types.h"
 
 using namespace boost;
-using std::vector;
+using boost::gregorian::date;
+using boost::gregorian::date_duration;
 using std::valarray;
-using std::string; // FIXME
+using std::vector;
+using std::string;
+using std::istream;
 
 template <class T>
 valarray<T> splitConvert(string line, const char *seperator)
@@ -24,3 +32,9 @@ valarray<T> splitConvert(string line, const char *seperator)
     }
     return toret;
 }
+
+void to_event(valarray<int> event_data, Event* event);
+int read_event(Event* event, istream& file);
+string to_json(Event* event, bool is_prediction);
+int to_minutes(time_duration duration);
+bool earlier_event_time(Event* a, Event* b);

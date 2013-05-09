@@ -19,11 +19,11 @@ class AntennaModel
     public:
         // Members
         static map<AntennaId, Antenna*> antennas;
-        static map<AntennaId, map<AntennaId, map<unsigned, vector<AntennaId> > > > transitions;
+        static map<AntennaId, vector<AntennaId> > transitions;
         static int timestep;
 
         // Initialize
-        static void init(ifstream& file, int step);
+        static void init(ifstream& antenna_file, ifstream& training_data_file);
 
         // Modify/access
         static bool add_antenna(valarray<float> antenna_data);
@@ -31,11 +31,8 @@ class AntennaModel
         static Antenna* find_antenna_by_id(AntennaId id);
         static Antenna* find_nearest_antenna(float lat, float lon);
 
-        static AntennaId predict_location(AntennaId start, AntennaId end,
-            unsigned num_steps, unsigned path_len);
+        // static AntennaId predict_location(AntennaId start, time_duration time_of_day);
+        static AntennaId next_step_prediction(AntennaId start, time_duration time);
 
     private:
-
-        static AntennaId next_step_prediction(AntennaId start, AntennaId end, unsigned num_steps);
-        // static AntennaId next_step_prediction(AntennaId current, unsigned elapsed_time);
 };

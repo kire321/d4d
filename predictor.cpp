@@ -2,8 +2,6 @@
 #include <cstdlib>
 #include <cstdio>
 
-#include <iostream>
-#include <fstream>
 #include <string>
 
 #include "types.h"
@@ -13,28 +11,7 @@
 
 using namespace std;
 
-int read_event(Event* event, istream& file)
-{
-    string line;
-    getline(file,line);
-    valarray<int> splitLine;
-    try {
-        splitLine=splitConvert<int>(line,"\t :-");
-        if (splitLine[EV_UID] == CLEAR_USERS) {
-            return CLEAR_USERS;
-        }
-    } catch (...) {
-        cerr << "Failed to parse a line of events\n";
-        return ERR;
-    }
-    if (splitLine[EV_ANTENNA]!=-1) {
-        User::to_event(splitLine, event);
-        if (LOG) cerr << "Converted to event";
-    }
-    return splitLine[EV_ANTENNA];
-}
-
-void parse_events(istream& file)
+void make_predictions(istream& file)
 {
     Event event;
     int status;
@@ -57,13 +34,15 @@ void parse_events(istream& file)
         prediction.time = event.time;
         prediction.antenna_id = user->make_prediction(prediction.time);
         if (prediction.antenna_id >= 0) { // -1 means failed for some reason
-            cout << User::to_json(&prediction, true) << endl;
+            cout << to_json(&prediction, true) << endl;
             if (LOG) cerr << "Made a prediction\n";
         }
 
         UserModel::update(&event);
-        cout << User::to_json(&event, false) << endl;
+        cout << to_json(&event, false) << endl;
         if (LOG) cerr << "Updated user model\n";
+        // AntennaModel::update(&event); - can't do this yet b/c can't control
+        // state when we're predicting after the fact
     }
     if (LOG) cerr << "Done parsing events\n";
 }
@@ -72,8 +51,7 @@ int main(int argc, char** argv)
 {
     // Initialize Antenna Model
     char* antenna_filename = argv[1];
-    int timestep = atoi(argv[2]);
-    char* training_data_filename = argv[3];
+    char* training_data_filename = argv[2];
     ifstream antenna_file, training_data_file;
     string line;
     try {
@@ -83,7 +61,7 @@ int main(int argc, char** argv)
         cerr << "Could not open initialization files.\n";
         exit(1);
     }
-    AntennaModel::init(antenna_file, training_data_file, timestep);
+    AntennaModel::init(antenna_file, training_data_file);
     antenna_file.close();
 
     UserModel::init();
@@ -91,8 +69,8 @@ int main(int argc, char** argv)
     srand(time(NULL));
 
     // Read in events and make predictions
-    parse_events(cin);
-    if (LOG) cerr << "Parsed events\n";
+    make_predictions(cin);
+    if (LOG) cerr << "Finished predictions\n";
 
     return EXIT_SUCCESS;
 }
