@@ -15,7 +15,7 @@ class UserModel
         static void init();
         static void clear(); // Use to destroy records of users
 
-        static bool add_user(UserId id);
+        static User* add_user(Event* event);
         static void update(Event* event);
         static User* find_user_by_id(UserId id);
 

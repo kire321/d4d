@@ -20,6 +20,10 @@ using std::valarray;
 using std::vector;
 using std::string;
 using std::istream;
+using std::cin;
+using std::cout;
+using std::cerr;
+using std::endl;
 
 template <class T>
 valarray<T> splitConvert(string line, const char *seperator)
@@ -38,3 +42,4 @@ int read_event(Event* event, istream& file);
 string to_json(Event* event, bool is_prediction);
 int to_minutes(time_duration duration);
 bool earlier_event_time(Event* a, Event* b);
+Event* event_copy(Event* other);

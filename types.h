@@ -19,4 +19,4 @@ enum EV { EV_UID = 0, EV_YEAR, EV_MONTH, EV_DAY, EV_HOUR, EV_MINUTE, EV_SECOND,
 #define CLEAR_USERS (-1)
 #define ERR (INT_MIN)
 
-#define LOG 0
+#define LOG 1

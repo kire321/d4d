@@ -62,3 +62,12 @@ bool earlier_event_time(Event* a, Event* b)
 {
     return a->time.time_of_day() <= b->time.time_of_day();
 }
+
+Event* event_copy(Event* other)
+{
+    Event* new_event = (Event*)malloc(sizeof(Event));
+    new_event->user_id = other->user_id;
+    new_event->antenna_id = other->antenna_id;
+    new_event->time = other->time;
+    return new_event;
+}

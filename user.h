@@ -22,7 +22,7 @@ class User
     Event* last_event;
 
     public:
-        User(UserId id) : id(id), last_event(NULL) { transitions = map<AntennaId, vector<AntennaId> >(); };
+        User(UserId id, Event* first_event);
         ~User();
 
         void add_event(Event* event);
@@ -32,9 +32,8 @@ class User
         Event* get_last_event() const { return last_event; };
 
         AntennaId make_prediction(ptime time);
-        int estimate_num_steps(ptime start, ptime end);
+        // int estimate_num_steps(ptime start, ptime end);
 
     private:
-        void previous_event(Event* previous_event);
-        int step_size_at(time_duration time);
+        // int step_size_at(time_duration time);
 };

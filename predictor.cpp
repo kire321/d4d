@@ -1,20 +1,14 @@
 #include <assert.h>
-#include <cstdlib>
-#include <cstdio>
 
-#include <string>
-
-#include "types.h"
 #include "utils.h"
 #include "antenna_model.h"
 #include "user_model.h"
-
-using namespace std;
 
 void make_predictions(istream& file)
 {
     Event event;
     int status;
+    if (LOG) cerr << "Making predictions\n";
     while (file.good()) {
         status = read_event(&event, file);
         if (status == ERR) {
@@ -25,8 +19,11 @@ void make_predictions(istream& file)
         }
         if (LOG) cerr << "Read event\n";
 
-        UserModel::add_user(event.user_id);
         User* user = UserModel::find_user_by_id(event.user_id);
+        if (!user) {
+            UserModel::add_user(&event);
+            user = UserModel::find_user_by_id(event.user_id);
+        }
         if (LOG) cerr << "got user for event\n";
 
         Event prediction;
@@ -37,10 +34,11 @@ void make_predictions(istream& file)
             cout << to_json(&prediction, true) << endl;
             if (LOG) cerr << "Made a prediction\n";
         }
+        if (LOG) cerr << "Finished prediction step\n";
 
         UserModel::update(&event);
-        cout << to_json(&event, false) << endl;
         if (LOG) cerr << "Updated user model\n";
+        cout << to_json(&event, false) << endl;
         // AntennaModel::update(&event); - can't do this yet b/c can't control
         // state when we're predicting after the fact
     }

@@ -27,10 +27,12 @@ void AntennaModel::init(ifstream& antenna_file, ifstream& training_data_file)
     }
 
     while (training_data_file.good()) {
+        getline(training_data_file, line);
         try {
-            // FIXME: Come up with a format for this. Maybe just i, j -> list?
+            valarray<float> step = splitConvert<float>(line, "\t");
+            transitions[step[0]].push_back(step[1]);
         } catch (...) {
-            cerr << "Failed to line of training data. Continuing\n";
+            cerr << "Failed to parse a line of training data. Continuing\n";
         }
     }
     if (LOG) cerr << "Trained model\n";
@@ -59,23 +61,25 @@ void AntennaModel::update(Event* event)
     User* user = UserModel::find_user_by_id(user_id);
     Event* last_event = user->get_last_event();
     AntennaId origin_antenna_id = last_event->antenna_id;
-    if (LOG) std::cerr << "Found last user event. Interpolating path\n";
+    // TODO: for now, just treat all length steps as equal
+    transitions[origin_antenna_id].push_back(antenna_id);
+    // if (LOG) std::cerr << "Found last user event. Interpolating path\n";
 
     // FIXME: this is kind of funny with interpolation
-    int num_steps = user->estimate_num_steps(last_event->time, time);
-    Path interpolated_path = Path::interpolate_path(origin_antenna_id,
-        antenna_id, num_steps);
-    if (LOG) std::cerr << "Interpolated path\n";
+    // int num_steps = user->estimate_num_steps(last_event->time, time);
+    // Path interpolated_path = Path::interpolate_path(origin_antenna_id,
+    //     antenna_id, num_steps);
+    // if (LOG) std::cerr << "Interpolated path\n";
 
-    AntennaId current_antenna, next_antenna;
-    current_antenna = interpolated_path.get_next_step(true);
-    while ((next_antenna = interpolated_path.get_next_step()) != -1) {
-        // We only care about bona fide transitions
-        if (current_antenna != next_antenna) {
-            transitions[current_antenna].push_back(next_antenna);
-            current_antenna = next_antenna;
-        }
-    }
+    // AntennaId current_antenna, next_antenna;
+    // current_antenna = interpolated_path.get_next_step(true);
+    // while ((next_antenna = interpolated_path.get_next_step()) != -1) {
+    //     // We only care about bona fide transitions
+    //     if (current_antenna != next_antenna) {
+    //         transitions[current_antenna].push_back(next_antenna);
+    //         current_antenna = next_antenna;
+    //     }
+    // }
 }
 
 Antenna* AntennaModel::find_antenna_by_id(AntennaId id)

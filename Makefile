@@ -4,8 +4,11 @@ LIBS=-lboost_date_time
 
 default: predictor
 
-run:
-	./predictor ../data/ANT_POS.TSV < ../data/events/sorted0.TSV  > ../output/output.json 2> ../output/err.txt
+# run:
+# 	./predictor ../data/ANT_POS.TSV < ../data/events/sorted0.TSV  > ../output/output.json 2> ../output/err.txt
+
+test:
+	./predictor ../data/ANT_POS.TSV ../data/sample_training.txt < ../data/sample_data.txt > ../output/sample_output.txt 2> ../output/sample_err.txt
 
 predictor: predictor.o \
 	user.o \
@@ -26,7 +29,7 @@ user_model.o: user_model.cpp user_model.h user.h types.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 path.o: path.cpp path.h antenna.h antenna_model.h types.h
 	$(CC) -c $< -o $@ $(CFLAGS)
-predictor.o: predictor.cpp types.h utils.h antenna_model.h user_model.h
+predictor.o: predictor.cpp utils.h antenna_model.h user_model.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 utils.o: utils.cpp utils.h
 	$(CC) -c $< -o $@ $(CFLAGS)
